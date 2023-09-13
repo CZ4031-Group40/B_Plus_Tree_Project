@@ -21,7 +21,7 @@ Storage::~Storage() {
 
 void *Storage::storeRecord(NBARecord record) {
     if(blockSize - currBlockUsedSpace <= sizeof(record) || numOfAllocatedBlocks == 0){
-        if(numOfAllocatedBlocks > 0 ){
+        if(numOfAllocatedBlocks < numOfBlocks ){
             currBlockPtr = storagePtr + numOfAllocatedBlocks * blockSize;
             numOfAllocatedBlocks += 1;
             currBlockUsedSpace = 0;
