@@ -1,9 +1,12 @@
 #ifndef B_PLUS_TREE_PROJECT_STORAGE_H
 #define B_PLUS_TREE_PROJECT_STORAGE_H
 
+using namespace std;
+
 const unsigned int blockSize = 400;
 
 struct NBARecord{
+    char date[10];
     unsigned int teamID; //4 bytes
     unsigned int homePoints; //4 bytes
     float homeFGPercentage; //4 bytes
