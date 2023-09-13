@@ -6,7 +6,6 @@ using namespace std;
 const unsigned int blockSize = 400;
 
 struct NBARecord{
-    char date[10];
     unsigned int teamID; //4 bytes
     unsigned int homePoints; //4 bytes
     float homeFGPercentage; //4 bytes
@@ -14,6 +13,7 @@ struct NBARecord{
     float homeFG3Percentage; //4 bytes
     unsigned int homeAssist; //4 bytes
     unsigned int homeRebound; //4 bytes
+    char date[10];
     bool homeTeamWins; //1 byte
 };
 
