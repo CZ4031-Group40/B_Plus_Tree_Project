@@ -13,7 +13,7 @@ struct NBARecord{
     float homeFG3Percentage; //4 bytes
     unsigned int homeAssist; //4 bytes
     unsigned int homeRebound; //4 bytes
-    char date[10];
+    char date[11];
     bool homeTeamWins; //1 byte
 };
 
