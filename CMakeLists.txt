@@ -4,4 +4,5 @@ project(B_Plus_Tree_Project)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(B_Plus_Tree_Project src/main.cpp
-        src/storage.h)
+        src/storage.h
+        src/storage.cpp)
