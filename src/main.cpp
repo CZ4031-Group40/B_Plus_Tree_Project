@@ -2,13 +2,14 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cmath>
 #include "storage.h"
 #include "storage.cpp"
 
 using namespace std;
 
 int main() {
-    Storage storage{100 * 10^6, blockSize };
+    Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
     ifstream inputFile("../data/games.txt");
 
     if (!inputFile) {
