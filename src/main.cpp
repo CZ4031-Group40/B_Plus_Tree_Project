@@ -3,8 +3,8 @@
 #include <string>
 #include <sstream>
 #include <cmath>
-#include "storage.h"
-#include "storage.cpp"
+#include "Storage.h"
+#include "Storage.cpp"
 
 using namespace std;
 
