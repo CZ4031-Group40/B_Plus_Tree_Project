@@ -4,7 +4,6 @@
 #include <sstream>
 #include <cmath>
 #include "Storage.h"
-#include "Storage.cpp"
 
 using namespace std;
 
