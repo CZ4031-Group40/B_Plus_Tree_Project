@@ -2,29 +2,48 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cmath>
+#include "Storage.h"
+#include "Storage.cpp"
 
 using namespace std;
 
 int main() {
+    Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
     ifstream inputFile("../data/games.txt");
 
     if (!inputFile) {
-        std::cerr << "Failed to open the file." << std::endl;
+        cerr << "Failed to open the file." << endl;
         return 1;
     }
 
     string line;
+    void *recordPtrArr[10];
     int count = 0;
 
     while(getline(inputFile, line) && count<10){
         count+=1;
+        if(count == 1) continue;
         istringstream iss(line);
-        string token;
+        NBARecord newRecord{};
+        iss >> newRecord.date;
+        iss >> newRecord.teamID;
+        iss >> newRecord.homePoints;
+        iss >> newRecord.homeFGPercentage;
+        iss >> newRecord.homeFTPercentage;
+        iss >> newRecord.homeFG3Percentage;
+        iss >> newRecord.homeAssist;
+        iss >> newRecord.homeRebound;
+        iss >> newRecord.homeTeamWins;
 
-        while (std::getline(iss, token, ' ')) {
-            // Process each token (space-separated value)
-            std::cout << "Token: " << token << std::endl;
-        }
+        void *recordPtr =  storage.storeRecord(newRecord);
+        recordPtrArr[count-1] = recordPtr;
+    }
+    count = 1;
+    while(count<10){
+        auto *recordPtr = static_cast<NBARecord*>(recordPtrArr[count]);
+        cout << recordPtr->date<<' '<< recordPtr->teamID << endl;
+        count +=1;
     }
 
     inputFile.close();
