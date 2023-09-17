@@ -4,7 +4,7 @@ BPlusTree::BPlusTree() {
 
 }
 
-BPlusTree::BPlusTree(vector<tuple<int, void *>> &initialData) {
+BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
 
 
 }
