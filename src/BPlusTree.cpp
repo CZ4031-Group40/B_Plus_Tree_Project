@@ -14,11 +14,12 @@ void BPlusTree::insertRecord() {
 }
 
 void* BPlusTree::searchRecord(int key) {
-
-
+ return nullptr;
 }
 
 void BPlusTree::deleteRecord() {
 
 }
+
+BPlusTree::~BPlusTree() = default;
 
