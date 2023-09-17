@@ -21,6 +21,8 @@ private:
 
 public:
     BPNode(bool isLeaf);
+    BPNode* getNextLeaf();
+    vector<float> getKeys();
 };
 
 class BPlusTree {
@@ -36,6 +38,8 @@ public:
     void insertRecord();
     void deleteRecord();
     void* searchRecord(int key);
+    BPNode* getRoot();
+
 };
 
 

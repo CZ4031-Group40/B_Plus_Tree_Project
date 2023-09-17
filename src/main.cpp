@@ -49,5 +49,13 @@ int main() {
 
     BPlusTree bPlusTree{recordPtrs};
 
+    BPNode *ptr=bPlusTree.getRoot();
+    while(ptr!= nullptr){
+        for(auto key:ptr->getKeys()){
+            cout<< key << " ";
+        }
+        cout<<"test"<< endl;
+        ptr = ptr->getNextLeaf();
+    }
     return 0;
 }
