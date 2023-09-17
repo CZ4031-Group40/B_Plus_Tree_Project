@@ -1,4 +1,6 @@
 #include "Storage.h"
+#include "BPlusTree.h"
+#include "DataStruct.h"
 #include <cstring>
 
 using namespace std;

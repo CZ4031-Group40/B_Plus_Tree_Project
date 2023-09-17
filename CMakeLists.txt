@@ -7,4 +7,5 @@ add_executable(B_Plus_Tree_Project src/main.cpp
         src/Storage.h
         src/Storage.cpp
         src/BPlusTree.cpp
-        src/BPlusTree.h)
+        src/BPlusTree.h
+        src/DataStruct.h)

@@ -1,5 +1,6 @@
 #include <tuple>
 #include <vector>
+#include "DataStruct.h"
 #ifndef B_PLUS_TREE_PROJECT_BPLUSTREE_H
 #define B_PLUS_TREE_PROJECT_BPLUSTREE_H
 
@@ -8,14 +9,18 @@ using namespace std;
 const unsigned int BPlusNodeSize = 10;
 
 class BPNode{
+    friend class BPlusTree;
+
 private:
+    int size = BPlusNodeSize;
     bool isLeaf;
-    int *key;
-    int size;
-    void **nodePtr;
+    BPNode *nextLeaf = nullptr;
+    vector<float> keys;
+    vector<BPNode *> childNodePtrs;
+    vector<vector<NBARecord *>> recordPtrs;
 
 public:
-    BPNode();
+    BPNode(bool isLeaf);
 };
 
 class BPlusTree {
@@ -24,7 +29,7 @@ private:
 
 public:
     BPlusTree(); //for empty tree
-    BPlusTree(vector<tuple<int , void * >> &initialData); // for bulk loading
+    BPlusTree(vector<tuple<float , void * >> &initialData); // for bulk loading
 
     ~BPlusTree();
 

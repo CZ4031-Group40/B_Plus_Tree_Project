@@ -1,11 +1,17 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
+#include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "BPlusTree.h"
 #include "Storage.h"
 
 using namespace std;
+bool compareKey(tuple<float,void *> key1, tuple<float,void *> key2){
+    return get<0>(key1) < get<0>(key2);
+}
 
 int main() {
     Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
@@ -17,12 +23,11 @@ int main() {
     }
 
     string line;
-    void *recordPtrArr[10];
+    vector<tuple<float,void *>> recordPtrs;
     int count = 0;
-
-    while(getline(inputFile, line) && count<10){
+    getline(inputFile, line);
+    while(getline(inputFile, line)){
         count+=1;
-        if(count == 1) continue;
         istringstream iss(line);
         NBARecord newRecord{};
         iss >> newRecord.date;
@@ -36,15 +41,13 @@ int main() {
         iss >> newRecord.homeTeamWins;
 
         void *recordPtr =  storage.storeRecord(newRecord);
-        recordPtrArr[count-1] = recordPtr;
+        recordPtrs.push_back(tuple<float , void*>{newRecord.homeFGPercentage, recordPtr});
     }
-    count = 1;
-    while(count<10){
-        auto *recordPtr = static_cast<NBARecord*>(recordPtrArr[count]);
-        cout << recordPtr->date<<' '<< recordPtr->teamID << endl;
-        count +=1;
-    }
-
     inputFile.close();
+
+    sort(recordPtrs.begin(), recordPtrs.end(), compareKey);
+
+    BPlusTree bPlusTree{recordPtrs};
+
     return 0;
 }

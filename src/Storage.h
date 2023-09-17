@@ -1,21 +1,11 @@
+#include "BPlusTree.h"
+#include "DataStruct.h"
 #ifndef B_PLUS_TREE_PROJECT_STORAGE_H
 #define B_PLUS_TREE_PROJECT_STORAGE_H
 
 using namespace std;
 
 const unsigned int blockSize = 400;
-
-struct NBARecord{
-    unsigned int teamID; //4 bytes
-    unsigned int homePoints; //4 bytes
-    float homeFGPercentage; //4 bytes
-    float homeFTPercentage; //4 bytes
-    float homeFG3Percentage; //4 bytes
-    unsigned int homeAssist; //4 bytes
-    unsigned int homeRebound; //4 bytes
-    char date[11];
-    bool homeTeamWins; //1 byte
-};
 
 class Storage{
 private:
