@@ -1,6 +1,8 @@
 #ifndef B_PLUS_TREE_PROJECT_DATASTRUCT_H
 #define B_PLUS_TREE_PROJECT_DATASTRUCT_H
 
+using namespace std;
+
 struct NBARecord{
     unsigned int teamID; //4 bytes
     unsigned int homePoints; //4 bytes
@@ -13,4 +15,7 @@ struct NBARecord{
     bool homeTeamWins; //1 byte
 };
 
+struct NBARecords{
+    vector<NBARecord*> records;
+};
 #endif

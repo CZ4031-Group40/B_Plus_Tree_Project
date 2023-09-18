@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include "BPlusTree.h"
@@ -34,28 +35,28 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
 
         if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){
             if(!bpNode->keys.empty() && bpNode->keys[bpNode->keys.size() - 1] == recordKey){
-                vector<NBARecord *> *recordVectorPtr = &(bpNode->recordPtrs[bpNode->recordPtrs.size()-1]);
-                recordVectorPtr->push_back(recordAddress);
+                NBARecords *recordVectorPtr = (bpNode->recordPtrs[bpNode->recordPtrs.size()-1]);
+                recordVectorPtr->records.push_back(recordAddress);
             } else {
-                vector<NBARecord *> recordVector;
+                auto *recordVector = new NBARecords();
 
                 bpNode->keys.push_back(recordKey);
-                recordVector.push_back(recordAddress);
+                recordVector->records.push_back(recordAddress);
                 bpNode->recordPtrs.push_back(recordVector);
             }
 
         } else {
-            vector<NBARecord *> recordVector;
+            auto *recordVector = new NBARecords();
+
             auto newNode = new BPNode(true);
 
             bpNodes.push_back(bpNode);
             bpNode = newNode;
             bpNode->keys.push_back(recordKey);
-            recordVector.push_back(recordAddress);
+            recordVector->records.push_back(recordAddress);
             bpNode->recordPtrs.push_back(recordVector);
         }
     }
-
 
 //    Make sure that element have at least floor[(n+1)/2]
     if(bpNode->keys.size() < (bpNode->size + 1) / 2){
@@ -78,16 +79,65 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     }
 
     bpNodes.push_back(bpNode);
-    for(unsigned int i=0; i<bpNodes.size()-1; i++){
-        bpNodes[i]->nextLeaf = bpNodes[i+1];
+    for(unsigned int i=0; i<bpNodes.size(); i++){
+        bpNodes[i]->nextLeaf = i<bpNodes.size()-1 ? bpNodes[i+1]: nullptr;
+        bpNodes[i]->minKey = bpNodes[i]->keys[0];
     }
     BPNode *ptr = bpNodes[0];
 
-    this->root = ptr;
-//    vector<BPNode> parentNodes;
-//    while(bpNodes.size()>1){
-//
+//    while(ptr != nullptr){
+//        cout<<ptr->keys[0]<<" "<< ptr->minKey<<endl;
+//        ptr = ptr->nextLeaf;
 //    }
+
+    vector<BPNode*> parentNodes;
+    while(bpNodes.size()>1){
+        auto *parentNode = new BPNode(false);
+        parentNode->childNodePtrs.push_back(bpNodes[0]);
+        parentNode->minKey = bpNodes[0]->minKey;
+        for(unsigned int i=1; i< bpNodes.size(); i++){
+            if(parentNode->keys.size() < parentNode ->size){
+                parentNode->childNodePtrs.push_back(bpNodes[i]);
+                parentNode->keys.push_back(bpNodes[i]->minKey);
+            } else {
+                parentNode->minKey = parentNode->childNodePtrs[0]->minKey;
+                cout<<parentNode->minKey<< " t" <<endl;
+                parentNodes.push_back(parentNode);
+
+                auto *newParentNode = new BPNode(false);
+                parentNode=newParentNode;
+                parentNode->childNodePtrs.push_back(bpNodes[i]);
+                parentNode->minKey = bpNodes[i]->minKey;
+            }
+        }
+
+        if(parentNode->keys.size() < parentNode->size/2 && !parentNodes.empty()){
+            BPNode *lastNode = parentNodes[parentNodes.size()-1];
+            int elementsToMove = lastNode->keys.size() - (lastNode->keys.size() + parentNode->keys.size()) / 2;
+
+            parentNode->keys.insert(
+                    parentNode->keys.begin(),
+                    lastNode->keys.end() - elementsToMove,
+                    lastNode->keys.end()
+            );
+            parentNode->childNodePtrs.insert(
+                    parentNode->childNodePtrs.begin(),
+                    lastNode->childNodePtrs.end() - elementsToMove-1,
+                    lastNode->childNodePtrs.end()
+            );
+            parentNode->minKey = parentNode->childNodePtrs[0]->minKey;
+
+            lastNode->keys.resize(lastNode->keys.size() - elementsToMove - 1);
+            lastNode->childNodePtrs.resize(lastNode->childNodePtrs.size() - elementsToMove);
+        }
+
+        parentNodes.push_back(parentNode);
+        bpNodes = parentNodes;
+
+        vector<BPNode *> newParentNodes;
+        parentNodes = newParentNodes;
+    }
+    this->root = bpNodes[0];
 
 }
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const unsigned int BPlusNodeSize = 10;
+const unsigned int BPlusNodeSize = 2;
 
 class BPNode{
     friend class BPlusTree;
@@ -14,10 +14,11 @@ class BPNode{
 private:
     int size = BPlusNodeSize;
     bool isLeaf;
+    float minKey;
     BPNode *nextLeaf = nullptr;
     vector<float> keys;
     vector<BPNode *> childNodePtrs;
-    vector<vector<NBARecord *>> recordPtrs;
+    vector<NBARecords *> recordPtrs;
 
 public:
     BPNode(bool isLeaf);
