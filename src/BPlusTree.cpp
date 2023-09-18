@@ -24,7 +24,6 @@ BPlusTree::BPlusTree() {
 }
 
 BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
-    //test
     auto *bpNode = new BPNode(true);
     vector<BPNode *> bpNodes;
 
@@ -58,7 +57,7 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         }
     }
 
-//    Make sure that element have at least floor[(n+1)/2]
+    //Make sure that element have at least floor[(n+1)/2]
     if(bpNode->keys.size() < (bpNode->size + 1) / 2){
         BPNode *lastNode = bpNodes[bpNodes.size()-1];
         int elementsToMove = lastNode->keys.size() - (lastNode->keys.size() + bpNode->keys.size()) / 2;
@@ -83,13 +82,8 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         bpNodes[i]->nextLeaf = i<bpNodes.size()-1 ? bpNodes[i+1]: nullptr;
         bpNodes[i]->minKey = bpNodes[i]->keys[0];
     }
-    BPNode *ptr = bpNodes[0];
 
-//    while(ptr != nullptr){
-//        cout<<ptr->keys[0]<<" "<< ptr->minKey<<endl;
-//        ptr = ptr->nextLeaf;
-//    }
-
+    //Merge parents recursively until only one node is left
     vector<BPNode*> parentNodes;
     while(bpNodes.size()>1){
         auto *parentNode = new BPNode(false);
@@ -137,8 +131,9 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         vector<BPNode *> newParentNodes;
         parentNodes = newParentNodes;
     }
-    this->root = bpNodes[0];
 
+    this->root = bpNodes[0];
+    
 }
 
 void BPlusTree::insertRecord() {
