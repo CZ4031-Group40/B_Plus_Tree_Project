@@ -15,7 +15,7 @@ bool compareKey(tuple<float,void *> key1, tuple<float,void *> key2){
 
 int main() {
     Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
-    ifstream inputFile("../data/games.txt");
+    ifstream inputFile("../data/test_duplicate.txt");
 
     if (!inputFile) {
         cerr << "Failed to open the file." << endl;
@@ -49,5 +49,7 @@ int main() {
 
     BPlusTree bPlusTree{recordPtrs};
 
+    BPNode *ptr=bPlusTree.getRoot();
+    cout<<ptr->getKeys()[0]<<endl;
     return 0;
 }
