@@ -33,28 +33,28 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         float recordKey = get<0>(i);
         auto recordAddress = static_cast<NBARecord *>(get<1>(i));
 
-        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){
+        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){ 
             if(!bpNode->keys.empty() && bpNode->keys[bpNode->keys.size() - 1] == recordKey){
                 NBARecords *recordVectorPtr = (bpNode->recordPtrs[bpNode->recordPtrs.size()-1]);
-                recordVectorPtr->records.push_back(recordAddress);
-            } else {
+                recordVectorPtr->records.push_back(recordAddress); 
+            } else { 
                 auto *recordVector = new NBARecords();
 
-                bpNode->keys.push_back(recordKey);
+                bpNode->keys.push_back(recordKey); 
                 recordVector->records.push_back(recordAddress);
-                bpNode->recordPtrs.push_back(recordVector);
+                bpNode->recordPtrs.push_back(recordVector); 
             }
 
-        } else {
+        } else { 
             auto *recordVector = new NBARecords();
 
             auto newNode = new BPNode(true);
 
             bpNodes.push_back(bpNode);
-            bpNode = newNode;
+            bpNode = newNode; 
             bpNode->keys.push_back(recordKey);
             recordVector->records.push_back(recordAddress);
-            bpNode->recordPtrs.push_back(recordVector);
+            bpNode->recordPtrs.push_back(recordVector); 
         }
     }
 
@@ -137,7 +137,20 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     
 }
 
-void BPlusTree::insertRecord() {
+void BPlusTree::insertRecord(float recordKey, void* recordAddress) {
+    // Check if the tree is empty
+    if (root == nullptr) {
+        // Create a new root node and add the record
+        root = new BPNode(true);
+        root->keys.push_back(recordKey);
+
+        // Create an NBARecords object for this key
+        auto* recordVector = new NBARecords();
+        recordVector->records.push_back(recordAddress);
+
+        root->recordPtrs.push_back(recordVector);
+        return;
+    }
 
 }
 
