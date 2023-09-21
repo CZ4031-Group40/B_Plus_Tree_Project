@@ -117,12 +117,14 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
             );
             parentNode->childNodePtrs.insert(
                     parentNode->childNodePtrs.begin(),
-                    lastNode->childNodePtrs.end() - elementsToMove-1,
+                    lastNode->childNodePtrs.end() - elementsToMove,
                     lastNode->childNodePtrs.end()
             );
+            for (int i = 0; i < parentNode->keys.size(); i++) {
+                parentNode->keys[i] = parentNode->childNodePtrs[i+1]->minKey;
+            }
             parentNode->minKey = parentNode->childNodePtrs[0]->minKey;
-
-            lastNode->keys.resize(lastNode->keys.size() - elementsToMove - 1);
+            lastNode->keys.resize(lastNode->keys.size() - elementsToMove);
             lastNode->childNodePtrs.resize(lastNode->childNodePtrs.size() - elementsToMove);
         }
 
@@ -147,20 +149,21 @@ NBARecords *BPlusTree::searchRecord(float key) {
     }
     BPNode *current = root;
     while (!current->isLeaf) {
-        for (int i = 0; i < current->size; i++) {
+        for (int i = 0; i < current->keys.size(); i++) {
             if (key < current->keys[i]) {
                 current = current->childNodePtrs[i];
                 break;
             }
 
-            if (i == current->size-1) {
+            if (i == current->keys.size()-1) {
                 current = current->childNodePtrs[i+1];
                 break;
             }
         }
     }
 
-    for (int i = 0; i < current->size; i++) {
+    for (int i = 0; i < current->keys.size(); i++) {
+        cout << current->keys[i] << endl;
         if (key == current->keys[i]) {
             return current->recordPtrs[i];
         }

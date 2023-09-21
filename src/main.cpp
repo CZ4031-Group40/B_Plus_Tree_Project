@@ -58,21 +58,26 @@ int main() {
     cout << endl;
 
     // Search data
-    float queriedFGP = 0.5;
-    NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
+    float queriedFGP = 0.643;
     cout << "Searching for FG_PCT home = " << queriedFGP << endl;
-    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
-    for (int i = 0; i < queriedData->records.size(); i++) {
-        NBARecord *record = queriedData->records[i];
-        cout << record->date << "\t\t";
-        cout << record->teamID << "\t\t";
-        cout << record->homePoints << "\t\t\t";
-        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
-        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
-        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
-        cout << record->homeAssist << "\t\t\t";
-        cout << record->homeRebound << "\t\t\t";
-        cout << record->homeTeamWins << endl;
+    NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
+    if (queriedData == nullptr) {
+        cout << "Can't find record" << endl;
+    }
+    else {
+        cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
+        for (int i = 0; i < queriedData->records.size(); i++) {
+            NBARecord *record = queriedData->records[i];
+            cout << record->date << "\t\t";
+            cout << record->teamID << "\t\t";
+            cout << record->homePoints << "\t\t\t";
+            cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
+            cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
+            cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
+            cout << record->homeAssist << "\t\t\t";
+            cout << record->homeRebound << "\t\t\t";
+            cout << record->homeTeamWins << endl;
+        }
     }
 
     cout<<ptr->getKeys()[0]<<endl;
