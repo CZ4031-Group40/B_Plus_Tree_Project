@@ -110,18 +110,16 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
             BPNode *lastNode = parentNodes[parentNodes.size()-1];
             int elementsToMove = lastNode->keys.size() - (lastNode->keys.size() + parentNode->keys.size()) / 2;
 
-            parentNode->keys.insert(
-                    parentNode->keys.begin(),
-                    lastNode->keys.end() - elementsToMove,
-                    lastNode->keys.end()
-            );
             parentNode->childNodePtrs.insert(
                     parentNode->childNodePtrs.begin(),
                     lastNode->childNodePtrs.end() - elementsToMove,
                     lastNode->childNodePtrs.end()
             );
-            for (int i = 0; i < parentNode->keys.size(); i++) {
-                parentNode->keys[i] = parentNode->childNodePtrs[i+1]->minKey;
+            for (unsigned int i = elementsToMove; i > 0; i--) {
+                parentNode->keys.insert(
+                        parentNode->keys.begin(),
+                        parentNode->childNodePtrs[i]->minKey
+                );
             }
             parentNode->minKey = parentNode->childNodePtrs[0]->minKey;
             lastNode->keys.resize(lastNode->keys.size() - elementsToMove);
@@ -163,7 +161,6 @@ NBARecords *BPlusTree::searchRecord(float key) {
     }
 
     for (int i = 0; i < current->keys.size(); i++) {
-        cout << current->keys[i] << endl;
         if (key == current->keys[i]) {
             return current->recordPtrs[i];
         }
