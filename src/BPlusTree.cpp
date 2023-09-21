@@ -137,7 +137,7 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     
 }
 
-void BPlusTree::insertRecord(float recordKey, void* recordAddress) {
+void BPlusTree::insertRecord(float recordKey, NBARecord* recordAddress) {
     // Check if the tree is empty
     if (root == nullptr) {
         // Create a new root node and add the record

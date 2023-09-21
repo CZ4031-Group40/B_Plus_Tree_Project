@@ -36,7 +36,7 @@ public:
 
     ~BPlusTree();
 
-    void insertRecord();
+    void insertRecord(float recordKey, NBARecord* recordAddress);
     void deleteRecord();
     NBARecords* searchRecord(float key);
     void displayTree(BPNode *current);
