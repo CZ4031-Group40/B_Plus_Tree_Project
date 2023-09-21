@@ -38,7 +38,8 @@ public:
 
     void insertRecord();
     void deleteRecord();
-    void* searchRecord(int key);
+    NBARecords* searchRecord(float key);
+    void displayTree(BPNode *current);
     BPNode* getRoot();
 
 };

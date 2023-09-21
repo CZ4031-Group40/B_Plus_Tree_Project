@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <queue>
 #include "BPlusTree.h"
 #include "Storage.h"
 
@@ -140,8 +141,68 @@ void BPlusTree::insertRecord() {
 
 }
 
-void* BPlusTree::searchRecord(int key) {
- return nullptr;
+NBARecords *BPlusTree::searchRecord(float key) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+    BPNode *current = root;
+    while (!current->isLeaf) {
+        for (int i = 0; i < current->size; i++) {
+            if (key < current->keys[i]) {
+                current = current->childNodePtrs[i];
+                break;
+            }
+
+            if (i == current->size-1) {
+                current = current->childNodePtrs[i+1];
+                break;
+            }
+        }
+    }
+
+    for (int i = 0; i < current->size; i++) {
+        if (key == current->keys[i]) {
+            return current->recordPtrs[i];
+        }
+    }
+
+    return nullptr;
+}
+
+void BPlusTree::displayTree(BPNode *current) {
+    if (current == nullptr) {
+        return;
+    }
+    int level = 1;
+    queue<BPNode *> q;
+    q.push(current);
+
+    while (!q.empty()) {
+        int l;
+        l = q.size();
+        cout << "Level " << level++ << ": ";
+
+        for (int i = 0; i < l; i++) {
+            BPNode *node = q.front();
+            q.pop();
+
+            for (int j = 0; j < node->keys.size(); j++) {
+                cout << node->keys[j] << " ";
+            }
+
+            for (int j = 0; j < node->childNodePtrs.size(); j++) {
+                if (node->childNodePtrs[j] != nullptr) {
+                    q.push(node->childNodePtrs[j]);
+                }
+            }
+
+            cout << "\t";
+        }
+        cout << endl;
+        cout << endl;
+    }
+
+
 }
 
 void BPlusTree::deleteRecord() {
