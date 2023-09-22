@@ -152,6 +152,99 @@ void BPlusTree::insertRecord(float recordKey, NBARecord* recordAddress) {
         return;
     }
 
+    queue<BPNode *> q; //this maintains the list of nodes traversed down for parent node merging
+    BPNode *current = root;
+    while (!current->isLeaf) { 
+        q.push(current);
+        // find target leaf node
+        for (int i = 0; i < current->keys.size(); i++) {
+            if (key < current->keys[i]) {
+                current = current->childNodePtrs[i];
+                break;
+            }
+
+            if (i == current->keys.size()-1) {
+                current = current->childNodePtrs[i+1];
+                break;
+            }
+        }
+    }
+    // at target leaf node, find location to insert
+    for (int j = 0; i < current->keys.size(); j++) {
+        if (key == current->keys[j]) { 
+            // add record with duplicate key
+            NBARecords *recordVector = current->recordPtrs[j];
+            recordVector->records.push_back(recordAddress);
+
+            return;
+        }
+        if (key < current->keys[j]) {
+            // insert the key and record at j
+            current->keys.insert(current->keys.begin()+j, key );
+
+            // Create an NBARecords object for this key
+            auto *recordVector = new NBARecords();
+            recordVector->records.push_back(recordAddress);
+
+            current->recordPtrs.insert(current->recordPtrs.begin() + j, recordVector);      
+
+            // if current node exceeds capacity, create new leaf node and update parent
+            if(current->keys.size() > current->size) {
+                //create new leaf node
+                BPNode *newNode = new BPNode(true);
+                int splitIdx = current->keys.size() / 2;
+
+                // move keys from splitidx onwards from current to new node
+                current->keys.erase(current->keys.begin() + splitIndex, current->keys.end());
+                newNode->keys.assign(current->keys.begin() + splitIndex, current->keys.end());
+
+                // move ptrs from splitidx onwards from current to new node
+                current->recordPtrs.erase(current->recordPtrs.begin() + splitIndex, current->recordPtrs.end());
+                newNode->recordPtrs.assign(current->recordPtrs.begin() + splitIndex, current->recordPtrs.end());
+
+                BPNode *curNextLeafNode = current->nextLeaf;
+                // re-assign nextLeaf for the currentnode and the newnode
+                current->nextLeaf = newNode;
+                newNode ->nextLeaf = curNextLeafNode;
+
+                // Adjust parent pointers if necessary
+                if (current == root) {
+                    // Create a new root node and make it point to current and newNode
+                    root = new BPNode(false); // The new root is not a leaf node
+                    root->keys.push_back(newNode->keys[0]);
+                    root->childNodePtrs.push_back(current);
+                    root->childNodePtrs.push_back(newNode);
+                } else {
+                    while (!q.empty()){
+                        BPNode *parent = q.back(); // get the parent node from queue
+                        q.pop();
+                        int idxInParent = 0;
+                        while (indexInParent < parent->keys.size() && newNode->keys[0] > parent->keys[indexInParent]) {
+                            indexInParent++;
+                        }
+                        if (parent->keys.size() < parent->size) {
+                            // parent node still have space, 
+                            //add new leaf node to parent node and return
+                            parent->keys.insert(parent->keys.begin() + indexInParent, newNode->keys[0]);
+                            parent->childNodePtrs.insert(parent->childNodePtrs.begin() + indexInParent + 1, newNode);
+                            return;
+                        }
+                        else {
+                            //parent node has no space,
+                            //split parent node
+                            auto *newParent = new BPNode(false);
+                            
+
+
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+
 }
 
 NBARecords *BPlusTree::searchRecord(float key) {
