@@ -337,7 +337,41 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
     return;
 }
 
-NBARecords *BPlusTree::searchRecord(float key) {
+NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
+    BPNode *firstNode = searchNode(startKey);
+    auto *recordVectorPtr = new NBARecords();
+    int i = 0;
+    while (i < firstNode->keys.size()) {
+        if (startKey == firstNode->keys[i]) {
+            recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                      firstNode->recordPtrs[i]->records.begin(),
+                                      firstNode->recordPtrs[i]->records.end());
+            break;
+        }
+        i++;
+    }
+    i++;
+    if (i == firstNode->recordPtrs.size()) {
+        firstNode = firstNode->nextLeaf;
+        i = 0;
+    }
+
+    while (firstNode != nullptr && firstNode->keys[i] <= endKey) {
+        recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                  firstNode->recordPtrs[i]->records.begin(),
+                                  firstNode->recordPtrs[i]->records.end());
+        i++;
+        if (i == firstNode->keys.size()) {
+            firstNode = firstNode->nextLeaf;
+            i = 0;
+        }
+    }
+
+    return recordVectorPtr;
+}
+
+// Helper function
+BPNode *BPlusTree::searchNode(float key) {
     if (root == nullptr) {
         return nullptr;
     }
@@ -356,9 +390,14 @@ NBARecords *BPlusTree::searchRecord(float key) {
         }
     }
 
-    for (int i = 0; i < current->keys.size(); i++) {
-        if (key == current->keys[i]) {
-            return current->recordPtrs[i];
+    return current;
+}
+
+NBARecords *BPlusTree::searchRecord(float key) {
+    BPNode *foundNode = searchNode(key);
+    for (int i = 0; i < foundNode->keys.size(); i++) {
+        if (key == foundNode->keys[i]) {
+            return foundNode->recordPtrs[i];
         }
     }
 

@@ -160,6 +160,7 @@ int main() {
 
             case 4: {
                 BPNode *ptr=bPlusTree.getRoot();
+
                 // Display Tree
                 cout << "Display Tree" << endl;
                 bPlusTree.displayTree(ptr);
@@ -171,11 +172,17 @@ int main() {
             case 5: {
                 // Search data
                 float queriedFGP;
-                cout << "Enter the key to search: ";
-                cin >> queriedFGP;
+//                cout << "Enter the key to search: ";
+//                cin >> queriedFGP;
+//
+//                cout << "Searching for FG_PCT home = " << queriedFGP << endl;
+//                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
+//
+                float startKey = 0.6;
+                float endKey = 1;
+                cout << "Searching for FG_PCT home between " << startKey << " and " << endKey  << endl;
+                NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
 
-                cout << "Searching for FG_PCT home = " << queriedFGP << endl;
-                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
                 if (queriedData == nullptr) {
                     cout << "Can't find record" << endl;
                 }
@@ -204,7 +211,7 @@ int main() {
 
             case 7:
                 return 0;
-            
+
             default:
                 cout << "Invalid choice. Please choose a valid option." << endl;
         }
