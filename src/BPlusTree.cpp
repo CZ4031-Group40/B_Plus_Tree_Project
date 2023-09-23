@@ -180,7 +180,6 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             newNode ->nextLeaf = curNextLeafNode;
             return newNode; // return newNode up the recursive call
         }
-        return nullptr; 
     }
     else {
         int insertIdx = 0;
@@ -237,8 +236,8 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             }
 
         }
-        return nullptr;
     }
+    return nullptr; 
 }
 
 void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
