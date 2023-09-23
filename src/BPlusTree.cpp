@@ -153,25 +153,34 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             }
             insertIdx = i+1;
         }
-        // insert the key and record at i
-        curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
-        // Create an NBARecords object for this key
-        auto *recordVector = new NBARecords();
-        recordVector->records.push_back(recordAddress);
-        curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);      
+        if(curNode->keys.size() < curNode->size) {
+
+            curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+            auto *recordVector = new NBARecords();
+            recordVector->records.push_back(recordAddress);
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+
+        }
         // if current node exceeds capacity, create new leaf node and update parent by returning newNode
-        if(curNode->keys.size() > curNode->size) {
+        else {
+
             //create new leaf node
             BPNode *newNode = new BPNode(true);
+
+            auto *recordVector = new NBARecords();
+            recordVector->records.push_back(recordAddress);
+
+            curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+
             int splitIdx = curNode->keys.size() / 2;
 
             // move keys from splitidx onwards from current to new node
-            curNode->keys.erase(curNode->keys.begin() + splitIdx, curNode->keys.end());
             newNode->keys.assign(curNode->keys.begin() + splitIdx, curNode->keys.end());
+            curNode->keys.erase(curNode->keys.begin() + splitIdx, curNode->keys.end());
 
-            // move ptrs from splitidx onwards from curNode to new node
-            curNode->recordPtrs.erase(curNode->recordPtrs.begin() + splitIdx, curNode->recordPtrs.end());
             newNode->recordPtrs.assign(curNode->recordPtrs.begin() + splitIdx, curNode->recordPtrs.end());
+            curNode->recordPtrs.erase(curNode->recordPtrs.begin() + splitIdx, curNode->recordPtrs.end());
 
             BPNode *curNextLeafNode = curNode->nextLeaf;
             // re-assign nextLeaf for the currentnode and the newnode
@@ -180,6 +189,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             newNode ->nextLeaf = curNextLeafNode;
             return newNode; // return newNode up the recursive call
         }
+        
     }
     else {
         int insertIdx = 0;
@@ -200,10 +210,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
         BPNode *tempNode = nullptr;
         tempNode = insertSplitRecord(key, recordAddress, childNode);
 
-        if (tempNode==nullptr) {
-            return nullptr;
-        }
-        else {
+        if (tempNode!=nullptr) {
             // new node was added somewhere below as tempNode is not null.
             // update current node to include that node.
             if (curNode->keys.size() < curNode->size) {
@@ -234,7 +241,6 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
 
                 return newNode;
             }
-
         }
     }
     return nullptr; 
