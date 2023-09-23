@@ -29,6 +29,7 @@ public:
 class BPlusTree {
 private:
     BPNode *root;
+    BPNode* insertSplitRecord(float recordKey, NBARecord* recordAddress, BPNode* curNode);
 
 public:
     BPlusTree(); //for empty tree
