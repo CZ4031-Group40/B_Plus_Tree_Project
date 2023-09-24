@@ -226,7 +226,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
                 //create new non-leaf node
                 BPNode *newNode = new BPNode(false);
 
-                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey); 
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey);
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
 
                 int splitIdx = curNode->keys.size() / 2;
