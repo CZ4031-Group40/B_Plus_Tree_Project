@@ -136,6 +136,7 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     this->root = bpNodes[0];
     
 }
+
 BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode* curNode) {
     
     if (curNode->isLeaf) {
@@ -246,8 +247,10 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
     return nullptr; 
 }
 
-void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
+void BPlusTree::insertRecord(float key, void* recordPtr) {
     
+    auto recordAddress = static_cast<NBARecord *>(recordPtr);
+
     BPNode *current = root;    
 
     if (current==nullptr) {
@@ -295,7 +298,9 @@ void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
             insertIdx++;
             childNode = current->childNodePtrs[insertIdx];
         }
+
         BPNode *tempNode = insertSplitRecord(key, recordAddress, childNode);
+        
         if (tempNode!=nullptr) {
             if (current->keys.size() < current->size) {
                 current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
@@ -303,13 +308,18 @@ void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
             }
             else {
                 BPNode *newNode = new BPNode(false);
+
+                current->keys.insert(current->keys.begin()+insertIdx, key);
+                current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
+                
                 int splitIdx = (current->keys.size() / 2 );
+
                 // move keys from splitidx onwards from current to new node
                 newNode->keys.assign(current->keys.begin() + splitIdx+1, current->keys.end());
                 current->keys.erase(current->keys.begin() + splitIdx, current->keys.end());
                 
                 newNode->childNodePtrs.assign(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
-                current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx, current->childNodePtrs.end());
+                current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
 
                 newNode->minKey = newNode->childNodePtrs[0]->minKey;
 
