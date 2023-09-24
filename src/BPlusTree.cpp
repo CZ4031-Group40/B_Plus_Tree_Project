@@ -139,20 +139,21 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
 BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode* curNode) {
     
     if (curNode->isLeaf) {
-        int insertIdx = 0;
-        for (int i = 0; i < curNode->keys.size(); i++) {
-            if (key == curNode->keys[i]) {
+        
+        unsigned int insertIdx = 0;
+        while (insertIdx < curNode->keys.size()) {
+            if (key == curNode->keys[insertIdx]) {
                 // add to existing key
-                NBARecords *recordVector = curNode->recordPtrs[i];
+                NBARecords* recordVector = curNode->recordPtrs[insertIdx];
                 recordVector->records.push_back(recordAddress);
-                return nullptr; // if no new node added, simply return nullptr
+                return nullptr;
             }
-            if (key < curNode->keys[i]) {
-                insertIdx = i;
-                break; // location to add has been found
+            if (key < curNode->keys[insertIdx]) {
+                break;
             }
-            insertIdx = i+1;
+            insertIdx++;
         }
+
         if(curNode->keys.size() < curNode->size) {
 
             curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
@@ -189,23 +190,24 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             newNode ->nextLeaf = curNextLeafNode;
             return newNode; // return newNode up the recursive call
         }
-        
+
     }
+
     else {
-        int insertIdx = 0;
+
+        unsigned int insertIdx = 0;
         BPNode *childNode = nullptr;
-        for (int i = 0; i < curNode->keys.size(); i++) {
-            if (key < curNode->keys[i]) {
-                childNode = curNode->childNodePtrs[i];
-                insertIdx = i;
+        childNode = curNode->childNodePtrs[insertIdx];
+
+        while (insertIdx < curNode->keys.size()) {
+            
+            if (key<curNode->childNodePtrs[insertIdx]) {
                 break;
             }
-            if (i == curNode->keys.size()-1) {
-                childNode = curNode->childNodePtrs[i+1];
-                insertIdx = i+1; // for insertion later
-                break;
-            }
+            insertIdx++;
+            childNode = curNode->childNodePtrs[insertIdx];
         }
+
         // call the function again on the child node
         BPNode *tempNode = nullptr;
         tempNode = insertSplitRecord(key, recordAddress, childNode);
@@ -218,8 +220,6 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
                 curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->keys[0]);
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
                 
-                return nullptr;
-
             }
             else {
                 //create new non-leaf node
@@ -253,54 +253,49 @@ void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
     if (current==nullptr) {
         return;
     }
-    int insertIdx = 0;
+
+    unsigned int insertIdx = 0;
     BPNode *childNode = nullptr;
-    for (int i = 0; i < current->keys.size(); i++) {
-        if (key < current->keys[i]) {
-            childNode = current->childNodePtrs[i];
-            insertIdx = i;
+    childNode = curNode->childNodePtrs[insertIdx];
+
+    while (insertIdx < curNode->keys.size()) {
+        
+        if (key<curNode->childNodePtrs[insertIdx]) {
             break;
         }
-        if (i == current->keys.size()-1) {
-            childNode = current->childNodePtrs[i+1];
-            insertIdx = i+1; // for insertion later
-            break;
-        }
+        insertIdx++;
+        childNode = curNode->childNodePtrs[insertIdx];
     }
 
     BPNode *tempNode = insertSplitRecord(key, recordAddress, childNode);
 
-    if (tempNode==nullptr) {
-        return;
-    }
+    if (tempNode!=nullptr) {
+        if (current->keys.size() < current->size) {
+            current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
+            current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
+        }
+        else {
+            BPNode *newNode = new BPNode(false);
+            int splitIdx = (current->keys.size() / 2 );
+            // move keys from splitidx onwards from current to new node
+            newNode->keys.assign(current->keys.begin() + splitIdx+1, current->keys.end());
+            current->keys.erase(current->keys.begin() + splitIdx, current->keys.end());
+            
+            newNode->childNodePtrs.assign(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
+            current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx, current->childNodePtrs.end());
 
-    if (current->keys.size() < current->size) {
-        current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
-        current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
-        return;
-    }
+            newNode->minKey = newNode->childNodePtrs[0]->minKey
+            ;
+            BPNode *newRootNode = new BPNode(false);
+            newRootNode->childNodePtrs.push_back(current);
+            newRootNode->childNodePtrs.push_back(newNode);
 
-    BPNode *newNode = new BPNode(false);
-    int splitIdx = (current->keys.size() / 2 );
-    // move keys from splitidx onwards from current to new node
-    newNode->keys.assign(current->keys.begin() + splitIdx+1, current->keys.end());
-    current->keys.erase(current->keys.begin() + splitIdx, current->keys.end());
-    
-    newNode->childNodePtrs.assign(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
-    current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx, current->childNodePtrs.end());
+            newRootNode->keys.push_back(newNode->minKey);
 
-    newNode->minKey = newNode->childNodePtrs[0]->minKey
-    ;
-    BPNode *newRootNode = new BPNode(false);
-    newRootNode->childNodePtrs.push_back(current);
-    newRootNode->childNodePtrs.push_back(newNode);
-
-    newRootNode->keys.push_back(newNode->minKey);
-
-    this->root = newRootNode;
+            this->root = newRootNode;
+        }
+    }    
     return;
-
-
 }
 
 NBARecords *BPlusTree::searchRecord(float key) {
