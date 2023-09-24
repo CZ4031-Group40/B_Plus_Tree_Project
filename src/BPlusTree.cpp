@@ -405,7 +405,38 @@ void BPlusTree::displayTree(BPNode *current) {
 
 }
 
-void BPlusTree::deleteRecord() {
+void BPlusTree::deleteRecord(float key)
+{
+    if (root == nullptr)
+    {
+        return;
+    }
+    BPNode *current = root;
+
+
+    while (!current->isLeaf){
+
+        for (int i = 0; i < current->keys.size(); i++){
+            if (key < current->keys[i]){
+                current = current->childNodePtrs[i];
+                break;
+            }
+
+            if (i == current->keys.size() - 1){
+                current = current->childNodePtrs[i + 1];
+                break;
+            }
+        }
+    }
+
+    for (int i = 0; i < current->keys.size(); i++){
+        if (key == current->keys[i]){
+            current->keys.erase(current->keys.begin() + i);
+            current->recordPtrs.erase(current->recordPtrs.begin() + i);
+            break;
+        }
+    }
+
 
 }
 

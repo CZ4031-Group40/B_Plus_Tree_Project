@@ -27,7 +27,8 @@ int main() {
         cout << "3. Insert record to tree from test file, display after each insert" << endl;
         cout << "4. Display tree" << endl;
         cout << "5. Search tree" << endl;
-        cout << "6. Exit" << endl;
+        cout << "6. Delete record" << endl;
+        cout << "7. Exit" << endl;
 
         int choice;
         cin >> choice;
@@ -191,7 +192,21 @@ int main() {
                 }
                 break;
             }
-            case 6:
+            case 6: {
+                float keyToDelete;
+                cout << "Input record to delete:";
+                cin >> keyToDelete;
+
+                bPlusTree.deleteRecord(keyToDelete);
+
+                BPNode *ptr = bPlusTree.getRoot();
+
+                cout << "New Tree After Deletion" << endl;
+                bPlusTree.displayTree(ptr);
+
+                break;
+            }
+            case 7:
                 return 0;
             
             default:
