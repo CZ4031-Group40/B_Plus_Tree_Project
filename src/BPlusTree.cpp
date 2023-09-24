@@ -309,7 +309,7 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
             else {
                 BPNode *newNode = new BPNode(false);
 
-                current->keys.insert(current->keys.begin()+insertIdx, key);
+                current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
                 current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
                 
                 int splitIdx = (current->keys.size() / 2 );
