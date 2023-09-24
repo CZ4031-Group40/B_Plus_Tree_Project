@@ -33,28 +33,28 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         float recordKey = get<0>(i);
         auto recordAddress = static_cast<NBARecord *>(get<1>(i));
 
-        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){
+        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){ 
             if(!bpNode->keys.empty() && bpNode->keys[bpNode->keys.size() - 1] == recordKey){
                 NBARecords *recordVectorPtr = (bpNode->recordPtrs[bpNode->recordPtrs.size()-1]);
-                recordVectorPtr->records.push_back(recordAddress);
-            } else {
+                recordVectorPtr->records.push_back(recordAddress); 
+            } else { 
                 auto *recordVector = new NBARecords();
 
-                bpNode->keys.push_back(recordKey);
+                bpNode->keys.push_back(recordKey); 
                 recordVector->records.push_back(recordAddress);
-                bpNode->recordPtrs.push_back(recordVector);
+                bpNode->recordPtrs.push_back(recordVector); 
             }
 
-        } else {
+        } else { 
             auto *recordVector = new NBARecords();
 
             auto newNode = new BPNode(true);
 
             bpNodes.push_back(bpNode);
-            bpNode = newNode;
+            bpNode = newNode; 
             bpNode->keys.push_back(recordKey);
             recordVector->records.push_back(recordAddress);
-            bpNode->recordPtrs.push_back(recordVector);
+            bpNode->recordPtrs.push_back(recordVector); 
         }
     }
 
@@ -137,8 +137,204 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     
 }
 
-void BPlusTree::insertRecord() {
+BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode* curNode) {
+    
+    if (curNode->isLeaf) {
+        
+        unsigned int insertIdx = 0;
+        while (insertIdx < curNode->keys.size()) {
+            if (key == curNode->keys[insertIdx]) {
+                // add to existing key
+                NBARecords* recordVector = curNode->recordPtrs[insertIdx];
+                recordVector->records.push_back(recordAddress);
+                return nullptr;
+            }
+            if (key < curNode->keys[insertIdx]) {
+                break;
+            }
+            insertIdx++;
+        }
 
+        if(curNode->keys.size() < curNode->size) {
+
+            curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+            auto *recordVector = new NBARecords();
+            recordVector->records.push_back(recordAddress);
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+
+        }
+        // if current node exceeds capacity, create new leaf node and update parent by returning newNode
+        else {
+
+            //create new leaf node
+            BPNode *newNode = new BPNode(true);
+
+            auto *recordVector = new NBARecords();
+            recordVector->records.push_back(recordAddress);
+
+            curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+
+            int splitIdx = curNode->keys.size() / 2;
+
+            // move keys from splitidx onwards from current to new node
+            newNode->keys.assign(curNode->keys.begin() + splitIdx, curNode->keys.end());
+            curNode->keys.erase(curNode->keys.begin() + splitIdx, curNode->keys.end());
+
+            newNode->recordPtrs.assign(curNode->recordPtrs.begin() + splitIdx, curNode->recordPtrs.end());
+            curNode->recordPtrs.erase(curNode->recordPtrs.begin() + splitIdx, curNode->recordPtrs.end());
+
+            BPNode *curNextLeafNode = curNode->nextLeaf;
+            // re-assign nextLeaf for the currentnode and the newnode
+            curNode->nextLeaf = newNode;
+            newNode->minKey = newNode->keys[0];
+            newNode ->nextLeaf = curNextLeafNode;
+            return newNode; // return newNode up the recursive call
+        }
+
+    }
+
+    else {
+
+        unsigned int insertIdx = 0;
+        BPNode *childNode = nullptr;
+        childNode = curNode->childNodePtrs[insertIdx];
+
+        while (insertIdx < curNode->keys.size()) {
+            
+            if (key < curNode->keys[insertIdx]) {
+                break;
+            }
+            insertIdx++;
+            childNode = curNode->childNodePtrs[insertIdx];
+        }
+
+        // call the function again on the child node
+        BPNode *tempNode = nullptr;
+        tempNode = insertSplitRecord(key, recordAddress, childNode);
+
+        if (tempNode!=nullptr) {
+            // new node was added somewhere below as tempNode is not null.
+            // update current node to include that node.
+            if (curNode->keys.size() < curNode->size) {
+
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->keys[0]);
+                curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
+                
+            }
+            else {
+                //create new non-leaf node
+                BPNode *newNode = new BPNode(false);
+
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+                curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
+
+                int splitIdx = curNode->keys.size() / 2;
+
+                // move keys from splitidx onwards from current to new node
+                newNode->keys.assign(curNode->keys.begin() + splitIdx+1, curNode->keys.end());
+                curNode->keys.erase(curNode->keys.begin() + splitIdx, curNode->keys.end());
+
+                newNode->childNodePtrs.assign(curNode->childNodePtrs.begin() + splitIdx+1, curNode->childNodePtrs.end());
+                curNode->childNodePtrs.erase(curNode->childNodePtrs.begin() + splitIdx+1, curNode->childNodePtrs.end());
+
+                newNode->minKey = newNode->childNodePtrs[0]->minKey;
+
+                return newNode;
+            }
+        }
+    }
+    return nullptr; 
+}
+
+void BPlusTree::insertRecord(float key, void* recordPtr) {
+    
+    auto recordAddress = static_cast<NBARecord *>(recordPtr);
+
+    BPNode *current = root;    
+
+    if (current==nullptr) {
+        // Create a new root node and add the record
+        BPNode *newRootNode = new BPNode(true);
+        newRootNode->keys.push_back(key);
+
+        // Create an NBARecords object for this key
+        auto* recordVector = new NBARecords();
+        recordVector->records.push_back(recordAddress);
+
+        newRootNode->recordPtrs.push_back(recordVector);
+        
+        this->root = newRootNode;
+
+        return;    
+    }
+    if (current->isLeaf) {
+        //insert straight to root
+        BPNode *tempNode = insertSplitRecord(key, recordAddress, current);
+        
+        // create a new root node with current and tempNode as the childnodes
+        if (tempNode!=nullptr) {
+            BPNode *newRootNode = new BPNode(false);
+            newRootNode->childNodePtrs.push_back(current);
+            newRootNode->childNodePtrs.push_back(tempNode);
+
+            newRootNode->keys.push_back(tempNode->keys[0]);
+            newRootNode->minKey = newRootNode->childNodePtrs[0]->minKey;
+
+            this->root = newRootNode;
+        }
+        // it tempNode is null, record is already added to leaf node
+    }
+    else {
+        unsigned int insertIdx = 0;
+        BPNode *childNode = nullptr;
+        childNode = current->childNodePtrs[insertIdx];
+
+        while (insertIdx < current->keys.size()) {
+            
+            if (key<current->keys[insertIdx]) {
+                break;
+            }
+            insertIdx++;
+            childNode = current->childNodePtrs[insertIdx];
+        }
+
+        BPNode *tempNode = insertSplitRecord(key, recordAddress, childNode);
+        
+        if (tempNode!=nullptr) {
+            if (current->keys.size() < current->size) {
+                current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
+                current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
+            }
+            else {
+                BPNode *newNode = new BPNode(false);
+
+                current->keys.insert(current->keys.begin()+insertIdx, key);
+                current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
+                
+                int splitIdx = (current->keys.size() / 2 );
+
+                // move keys from splitidx onwards from current to new node
+                newNode->keys.assign(current->keys.begin() + splitIdx+1, current->keys.end());
+                current->keys.erase(current->keys.begin() + splitIdx, current->keys.end());
+                
+                newNode->childNodePtrs.assign(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
+                current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
+
+                newNode->minKey = newNode->childNodePtrs[0]->minKey;
+
+                BPNode *newRootNode = new BPNode(false);
+                newRootNode->childNodePtrs.push_back(current);
+                newRootNode->childNodePtrs.push_back(newNode);
+
+                newRootNode->keys.push_back(newNode->minKey);
+                newRootNode->minKey = newRootNode->childNodePtrs[0]->minKey;
+
+                this->root = newRootNode;
+            }
+        }    
+    }
+    return;
 }
 
 NBARecords *BPlusTree::searchRecord(float key) {

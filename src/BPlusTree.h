@@ -29,6 +29,7 @@ public:
 class BPlusTree {
 private:
     BPNode *root;
+    BPNode* insertSplitRecord(float recordKey, NBARecord* recordAddress, BPNode* curNode);
 
 public:
     BPlusTree(); //for empty tree
@@ -36,7 +37,7 @@ public:
 
     ~BPlusTree();
 
-    void insertRecord();
+    void insertRecord(float recordKey, void* recordAddress);
     void deleteRecord();
     NBARecords* searchRecord(float key);
     void displayTree(BPNode *current);
