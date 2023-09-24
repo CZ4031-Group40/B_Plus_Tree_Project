@@ -381,9 +381,13 @@ void BPlusTree::displayTree(BPNode *current) {
         for (int i = 0; i < l; i++) {
             BPNode *node = q.front();
             q.pop();
+            cout << "   " << " ";
 
             for (int j = 0; j < node->keys.size(); j++) {
+                cout << "|" <<"";
                 cout << node->keys[j] << " ";
+                cout << "|" <<"";
+
             }
 
             for (int j = 0; j < node->childNodePtrs.size(); j++) {
