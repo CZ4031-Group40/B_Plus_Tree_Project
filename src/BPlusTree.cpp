@@ -251,7 +251,19 @@ void BPlusTree::insertRecord(float key, NBARecord* recordAddress) {
     BPNode *current = root;    
 
     if (current==nullptr) {
-        return;
+        // Create a new root node and add the record
+        newRootNode = new BPNode(true);
+        newRootNode->keys.push_back(recordKey);
+
+        // Create an NBARecords object for this key
+        auto* recordVector = new NBARecords();
+        recordVector->records.push_back(recordAddress);
+
+        newRootNode->recordPtrs.push_back(recordVector);
+        
+        this->root = newRootNode;
+
+        return;    
     }
 
     unsigned int insertIdx = 0;
