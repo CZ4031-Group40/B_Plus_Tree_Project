@@ -16,71 +16,140 @@ bool compareKey(tuple<float,void *> key1, tuple<float,void *> key2){
 
 int main() {
     Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
-    ifstream inputFile("../data/test_duplicate.txt");
+    BPlusTree bPlusTree; // Create an empty B+ tree
 
-    if (!inputFile) {
-        cerr << "Failed to open the file." << endl;
-        return 1;
-    }
+    cerr << "Empty tree is initialised." << endl;
 
-    string line;
-    vector<tuple<float,void *>> recordPtrs;
-    int count = 0;
-    getline(inputFile, line);
-    while(getline(inputFile, line)){
-        count+=1;
-        istringstream iss(line);
-        NBARecord newRecord{};
-        iss >> newRecord.date;
-        iss >> newRecord.teamID;
-        iss >> newRecord.homePoints;
-        iss >> newRecord.homeFGPercentage;
-        iss >> newRecord.homeFTPercentage;
-        iss >> newRecord.homeFG3Percentage;
-        iss >> newRecord.homeAssist;
-        iss >> newRecord.homeRebound;
-        iss >> newRecord.homeTeamWins;
+    while(true) {
+        cout << "Choose an action:" << endl;
+        cout << "1. Init bulk loaded tree" << endl;
+        cout << "2. Display tree" << endl;
+        cout << "3. Search tree" << endl;
+        cout << "4. Insert record to tree" << endl;
+        cout << "5. Exit" << endl;
 
-        void *recordPtr =  storage.storeRecord(newRecord);
-        recordPtrs.push_back(tuple<float , void*>{newRecord.homeFGPercentage, recordPtr});
-    }
-    inputFile.close();
+        int choice;
+        cin >> choice;
 
-    sort(recordPtrs.begin(), recordPtrs.end(), compareKey);
+        switch(choice) {
+            case 1: {
+                ifstream inputFile("../data/test_duplicate.txt");
 
-    BPlusTree bPlusTree{recordPtrs};
+                if (!inputFile) {
+                    cerr << "Failed to open the file." << endl;
+                    return 1;
+                }
 
-    BPNode *ptr=bPlusTree.getRoot();
+                string line;
+                vector<tuple<float,void *>> recordPtrs;
+                int count = 0;
+                getline(inputFile, line);
+                while(getline(inputFile, line)){
+                    count+=1;
+                    istringstream iss(line);
+                    NBARecord newRecord{};
+                    iss >> newRecord.date;
+                    iss >> newRecord.teamID;
+                    iss >> newRecord.homePoints;
+                    iss >> newRecord.homeFGPercentage;
+                    iss >> newRecord.homeFTPercentage;
+                    iss >> newRecord.homeFG3Percentage;
+                    iss >> newRecord.homeAssist;
+                    iss >> newRecord.homeRebound;
+                    iss >> newRecord.homeTeamWins;
 
-    // Display Tree
-    cout << "Display Tree" << endl;
-    bPlusTree.displayTree(ptr);
-    cout << "Finished" << endl;
-    cout << endl;
+                    void *recordPtr =  storage.storeRecord(newRecord);
+                    recordPtrs.push_back(tuple<float , void*>{newRecord.homeFGPercentage, recordPtr});
+                }
+                inputFile.close();
 
-    // Search data
-    float queriedFGP = 0.643;
-    cout << "Searching for FG_PCT home = " << queriedFGP << endl;
-    NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
-    if (queriedData == nullptr) {
-        cout << "Can't find record" << endl;
-    }
-    else {
-        cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
-        for (int i = 0; i < queriedData->records.size(); i++) {
-            NBARecord *record = queriedData->records[i];
-            cout << record->date << "\t\t";
-            cout << record->teamID << "\t\t";
-            cout << record->homePoints << "\t\t\t";
-            cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
-            cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
-            cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
-            cout << record->homeAssist << "\t\t\t";
-            cout << record->homeRebound << "\t\t\t";
-            cout << record->homeTeamWins << endl;
+                sort(recordPtrs.begin(), recordPtrs.end(), compareKey);
+                bPlusTree = BPlusTree{recordPtrs};
+                break;
+            }
+            case 2: {
+                BPNode *ptr=bPlusTree.getRoot();
+                // Display Tree
+                cout << "Display Tree" << endl;
+                bPlusTree.displayTree(ptr);
+                cout << "Finished" << endl;
+                cout << endl;
+                break;
+            }
+
+            case 3: {
+
+                // Search data
+                float queriedFGP = 0.643;
+                cout << "Searching for FG_PCT home = " << queriedFGP << endl;
+                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
+                if (queriedData == nullptr) {
+                    cout << "Can't find record" << endl;
+                }
+                else {
+                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
+                    for (int i = 0; i < queriedData->records.size(); i++) {
+                        NBARecord *record = queriedData->records[i];
+                        cout << record->date << "\t\t";
+                        cout << record->teamID << "\t\t";
+                        cout << record->homePoints << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
+                        cout << record->homeAssist << "\t\t\t";
+                        cout << record->homeRebound << "\t\t\t";
+                        cout << record->homeTeamWins << endl;
+                    }
+                }
+                break;
+            }
+            case 4: {
+
+                ifstream sequentialInputFile("../data/test_sequential.txt");
+
+                if (!sequentialInputFile) {
+                    cerr << "Failed to open the file." << endl;
+                    return 1;
+                }
+
+                string line;
+                vector<tuple<float,void *>> recordPtrs;
+                int count = 0;
+                getline(sequentialInputFile, line);
+                while(getline(sequentialInputFile, line)){
+                    count+=1;
+                    istringstream iss(line);
+                    NBARecord newRecord{};
+                    iss >> newRecord.date;
+                    iss >> newRecord.teamID;
+                    iss >> newRecord.homePoints;
+                    iss >> newRecord.homeFGPercentage;
+                    iss >> newRecord.homeFTPercentage;
+                    iss >> newRecord.homeFG3Percentage;
+                    iss >> newRecord.homeAssist;
+                    iss >> newRecord.homeRebound;
+                    iss >> newRecord.homeTeamWins;
+
+                    void *recordPtr =  storage.storeRecord(newRecord);
+                    bPlusTree.insertRecord(newRecord.homeFGPercentage,recordPtr);
+                    // BPNode *ptr=bPlusTree.getRoot();
+                    // // Display Tree
+                    // cout << "Display Tree" << endl;
+                    // bPlusTree.displayTree(ptr);
+                    // cout << "Finished" << endl;
+                    // cout << endl;
+                }
+                sequentialInputFile.close();
+
+                break;
+            }
+            case 5:
+                return 0;
+            
+            default:
+                cout << "Invalid choice. Please choose a valid option." << endl;
         }
     }
 
-    cout<<ptr->getKeys()[0]<<endl;
     return 0;
 }
