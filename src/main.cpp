@@ -181,12 +181,20 @@ int main() {
                 float startKey = 0.6;
                 float endKey = 1;
                 cout << "Searching for FG_PCT home between " << startKey << " and " << endKey  << endl;
+
+    // Calculate running time
+                auto start = chrono::high_resolution_clock::now();
                 NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
+
+                auto end = chrono::high_resolution_clock::now();
+                chrono::duration<double> time_taken = end - start;
+                cout << "Search Time: " << time_taken.count() << endl;
 
                 if (queriedData == nullptr) {
                     cout << "Can't find record" << endl;
                 }
                 else {
+                    float FG3_total = 0;
                     cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
                     for (int i = 0; i < queriedData->records.size(); i++) {
                         NBARecord *record = queriedData->records[i];
@@ -199,7 +207,9 @@ int main() {
                         cout << record->homeAssist << "\t\t\t";
                         cout << record->homeRebound << "\t\t\t";
                         cout << record->homeTeamWins << endl;
+                        FG3_total += record->homeFG3Percentage;
                     }
+                        cout << "Average of FG3_PCT_home: " << FG3_total/queriedData->records.size() << endl;
                 }
                 break;
             }

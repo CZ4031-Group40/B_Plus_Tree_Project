@@ -372,11 +372,13 @@ NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
 
 // Helper function
 BPNode *BPlusTree::searchNode(float key) {
+    int no_of_node_accessed = 0;
     if (root == nullptr) {
         return nullptr;
     }
     BPNode *current = root;
     while (!current->isLeaf) {
+        no_of_node_accessed++;
         for (int i = 0; i < current->keys.size(); i++) {
             if (key < current->keys[i]) {
                 current = current->childNodePtrs[i];
@@ -389,7 +391,8 @@ BPNode *BPlusTree::searchNode(float key) {
             }
         }
     }
-
+    cout << "Number of index node accessed: " << no_of_node_accessed << endl;
+    cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
     return current;
 }
 
