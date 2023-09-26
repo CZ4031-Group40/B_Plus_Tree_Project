@@ -218,7 +218,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             // update current node to include that node.
             if (curNode->keys.size() < curNode->size) {
 
-                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->keys[0]);
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey);
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
                 
             }
@@ -226,7 +226,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
                 //create new non-leaf node
                 BPNode *newNode = new BPNode(false);
 
-                curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey); 
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
 
                 int splitIdx = curNode->keys.size() / 2;
@@ -303,13 +303,13 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
         
         if (tempNode!=nullptr) {
             if (current->keys.size() < current->size) {
-                current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
+                current->keys.insert(current->keys.begin()+insertIdx, tempNode->minKey);
                 current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
             }
             else {
                 BPNode *newNode = new BPNode(false);
 
-                current->keys.insert(current->keys.begin()+insertIdx, tempNode->keys[0]);
+                current->keys.insert(current->keys.begin()+insertIdx, tempNode->minKey);
                 current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
                 
                 int splitIdx = (current->keys.size() / 2 );
