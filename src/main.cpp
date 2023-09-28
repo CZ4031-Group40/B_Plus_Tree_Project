@@ -17,7 +17,6 @@ bool compareKey(tuple<float,void *> key1, tuple<float,void *> key2){
 int main() {
     Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
     BPlusTree bPlusTree; // Create an empty B+ tree
-
     cerr << "Empty tree is initialised." << endl;
 
     while(true) {
@@ -28,7 +27,8 @@ int main() {
         cout << "4. Display tree" << endl;
         cout << "5. Search tree" << endl;
         cout << "6. Delete record" << endl;
-        cout << "7. Exit" << endl;
+        cout << "7. init new tree" << endl;
+        cout << "8. Exit" << endl;
 
         int choice;
         cin >> choice;
@@ -167,9 +167,11 @@ int main() {
             }
 
             case 5: {
-
                 // Search data
-                float queriedFGP = 0.643;
+                float queriedFGP;
+                cout << "Enter the key to search: ";
+                cin >> queriedFGP;
+
                 cout << "Searching for FG_PCT home = " << queriedFGP << endl;
                 NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
                 if (queriedData == nullptr) {
@@ -206,7 +208,13 @@ int main() {
 
                 break;
             }
-            case 7:
+            case 7: {
+                    bPlusTree = BPlusTree(); // Create an empty B+ tree
+                    cerr << "Empty tree is initialised." << endl;
+                    break;
+            }
+
+            case 8:
                 return 0;
             
             default:
