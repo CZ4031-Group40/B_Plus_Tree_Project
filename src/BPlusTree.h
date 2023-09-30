@@ -39,6 +39,8 @@ public:
 
     void insertRecord(float recordKey, void* recordAddress);
     void deleteRecord();
+    NBARecords* searchRangedRecord(float startKey, float endKey);
+    BPNode* searchNode(float key);
     NBARecords* searchRecord(float key);
     void displayTree(BPNode *current);
     BPNode* getRoot();

@@ -346,11 +346,12 @@ NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
             recordVectorPtr->records.insert(recordVectorPtr->records.end(),
                                       firstNode->recordPtrs[i]->records.begin(),
                                       firstNode->recordPtrs[i]->records.end());
+            i++;
             break;
         }
         i++;
     }
-    i++;
+
     if (i == firstNode->recordPtrs.size()) {
         firstNode = firstNode->nextLeaf;
         i = 0;
@@ -391,8 +392,8 @@ BPNode *BPlusTree::searchNode(float key) {
             }
         }
     }
-    cout << "Number of index node accessed: " << no_of_node_accessed << endl;
-    cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
+    cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
+    cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
     return current;
 }
 
