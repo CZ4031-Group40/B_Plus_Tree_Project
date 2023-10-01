@@ -37,3 +37,11 @@ void *Storage::storeRecord(NBARecord record) {
     memcpy(recordPtr, &record, sizeof(record));
     return recordPtr;
 }
+
+unsigned int Storage::getNumOfAllocatedBlocks() const {
+    return numOfAllocatedBlocks;
+}
+
+unsigned int Storage::getRecordsPerBlock() const {
+    return blockSize / sizeof(NBARecord);
+}

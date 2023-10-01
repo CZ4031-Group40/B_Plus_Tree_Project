@@ -24,5 +24,7 @@ public:
     ~Storage();
 
     void* storeRecord(NBARecord record);
+    unsigned int getNumOfAllocatedBlocks() const;
+    unsigned int getRecordsPerBlock() const;
 };
 #endif //B_PLUS_TREE_PROJECT_STORAGE_H
