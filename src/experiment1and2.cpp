@@ -56,10 +56,6 @@ int main() {
     cout << "Size of a record: " << recordSize << " bytes" << endl;
 
     cout << "========================================" << endl;
-    unsigned int recordsPerBlock = storage.getRecordsPerBlock();
-    cout << "Number of records per block (theoretical): " << recordsPerBlock << endl;
-
-    cout << "========================================" << endl;
     unsigned int allocatedBlocks = storage.getNumOfAllocatedBlocks();
     cout << "Current number of blocks used to store the data: " << allocatedBlocks << endl;
 
@@ -67,14 +63,15 @@ int main() {
     unsigned int empiricalRecordsPerBlock = numOfRecords / allocatedBlocks;
     cout << "Number of records per block (empirical): " << empiricalRecordsPerBlock << endl;
 
-    // Print row numbers with errors at the end
-    if (!errorRows.empty()) {
-        cout << "Rows with errors:";
-        for (int row : errorRows) {
-            cout << " " << row << ",";
-        }
-        cout << endl;
-    }
+    // cout << "========================================" << endl;
+    // // Print row numbers with errors at the end
+    // if (!errorRows.empty()) {
+    //     cout << "Rows with errors:";
+    //     for (int row : errorRows) {
+    //         cout << " " << row << ",";
+    //     }
+    //     cout << endl;
+    // }
 
     cout << "========================================EXPERIMENT TWO========================================" << endl;
 
@@ -87,6 +84,13 @@ int main() {
         // Insert the record into the bPlusTree
         bPlusTree.insertRecord(homeFGPercentage, recordPtr);
     }
+    BPNode *ptr=bPlusTree.getRoot();
+    bPlusTree.getNodeSize();
+    bPlusTree.calculateStatistics(ptr);
+    // bPlusTree.displayTree(ptr);
+
+    bPlusTree.displayRootNode();
+
 
     return 0;
 }
