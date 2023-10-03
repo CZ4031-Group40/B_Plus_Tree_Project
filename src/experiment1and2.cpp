@@ -63,15 +63,17 @@ int main() {
     unsigned int empiricalRecordsPerBlock = numOfRecords / allocatedBlocks;
     cout << "Number of records per block (empirical): " << empiricalRecordsPerBlock << endl;
 
-    // cout << "========================================" << endl;
-    // // Print row numbers with errors at the end
-    // if (!errorRows.empty()) {
-    //     cout << "Rows with errors:";
-    //     for (int row : errorRows) {
-    //         cout << " " << row << ",";
-    //     }
-    //     cout << endl;
-    // }
+    cout << "========================================" << endl;
+    // Print row numbers with errors at the end
+    if (!errorRows.empty()) {
+        // cout << "Rows with errors:";
+        // for (int row : errorRows) {
+        //     cout << " " << row << ",";
+        // }
+        // cout << endl;
+    cout << "Number of invalid records: " << errorRows.size() << endl;
+
+    }
 
     cout << "========================================EXPERIMENT TWO========================================" << endl;
 
