@@ -25,7 +25,8 @@ int main() {
         cout << "2. Insert all record from games.txt, display at the end" << endl;
         cout << "3. Insert record to tree from test file, display after each insert" << endl;
         cout << "4. Display tree" << endl;
-        cout << "5. Search tree" << endl;
+        cout << "5. Search key" << endl;
+        cout << "6. Search key range" << endl;
         cout << "6. init new tree" << endl;
         cout << "7. Exit" << endl;
 
@@ -171,20 +172,13 @@ int main() {
 
             case 5: {
                 // Search data
-                float queriedFGP;
-//                cout << "Enter the key to search: ";
-//                cin >> queriedFGP;
-//
-//                cout << "Searching for FG_PCT home = " << queriedFGP << endl;
-//                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
-//
-                float startKey = 0.6;
-                float endKey = 1;
-                cout << "Searching for FG_PCT home between " << startKey << " and " << endKey  << endl;
+                float queriedFGP = 0.5;
 
-    // Calculate running time
+                cout << "Searching for FG_PCT home = " << queriedFGP << endl;
+
+                // Calculate running time
                 auto start = chrono::high_resolution_clock::now();
-                NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
+                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
 
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
@@ -214,12 +208,48 @@ int main() {
                 break;
             }
             case 6: {
+                float startKey = 0.6;
+                float endKey = 1;
+                cout << "Searching for FG_PCT home between " << startKey << " and " << endKey  << endl;
+
+                // Calculate running time
+                auto start = chrono::high_resolution_clock::now();
+                NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
+
+                auto end = chrono::high_resolution_clock::now();
+                chrono::duration<double> time_taken = end - start;
+                cout << "Search Time: " << time_taken.count() << endl;
+
+                if (queriedData == nullptr) {
+                    cout << "Can't find record" << endl;
+                }
+                else {
+                    float FG3_total = 0;
+                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
+                    for (int i = 0; i < queriedData->records.size(); i++) {
+                        NBARecord *record = queriedData->records[i];
+                        cout << record->date << "\t\t";
+                        cout << record->teamID << "\t\t";
+                        cout << record->homePoints << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
+                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
+                        cout << record->homeAssist << "\t\t\t";
+                        cout << record->homeRebound << "\t\t\t";
+                        cout << record->homeTeamWins << endl;
+                        FG3_total += record->homeFG3Percentage;
+                    }
+                    cout << "Average of FG3_PCT_home: " << FG3_total/queriedData->records.size() << endl;
+                }
+                break;
+            }
+            case 7: {
                     bPlusTree = BPlusTree(); // Create an empty B+ tree
                     cerr << "Empty tree is initialised." << endl;
                     break;
             }
 
-            case 7:
+            case 8:
                 return 0;
 
             default:
