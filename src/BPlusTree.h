@@ -16,9 +16,9 @@ private:
     bool isLeaf; // 1 bytes
     float minKey; // 4 byte
     BPNode *nextLeaf = nullptr; // 8 byte
-    vector<float> keys; // 4 byte * number of keys
-    vector<BPNode *> childNodePtrs; // 8 byte * number of child 
-    vector<NBARecords *> recordPtrs; // 8 byte * number of records
+    vector<float> keys; // 4 byte * number of keys + 32 for vector
+    vector<BPNode *> childNodePtrs; // 8 byte * number of child + 32 for vector
+    vector<NBARecords *> recordPtrs; // 8 byte * number of records + 32 for vector
 
 public:
     BPNode(bool isLeaf);

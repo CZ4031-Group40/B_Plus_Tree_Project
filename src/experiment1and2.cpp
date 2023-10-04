@@ -79,7 +79,7 @@ int main() {
 
     BPlusTree bPlusTree; // Create an empty B+ tree
 
-    for (auto it = recordPtrs.end() - 1; it >= recordPtrs.begin(); --it) {
+    for (auto it = recordPtrs.begin(); it < recordPtrs.end(); it++) {
         float homeFGPercentage = get<0>(*it);
         void* recordPtr = get<1>(*it);
 

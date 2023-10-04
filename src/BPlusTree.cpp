@@ -453,8 +453,8 @@ void BPlusTree::calculateStatistics(BPNode *current) {
             q.pop();
 
             // Calculate the size of the node dynamically based on its components
-            int nodeSize = sizeof(node->size) + sizeof(node->isLeaf) + sizeof(node->minKey) +
-                           sizeof(node->nextLeaf) + sizeof(float) * node->keys.size() +
+            int nodeSize = sizeof(*node)+
+                           sizeof(float) * node->keys.size() +
                            sizeof(BPNode *) * node->childNodePtrs.size() +
                            sizeof(NBARecords *) * node->recordPtrs.size();
 
