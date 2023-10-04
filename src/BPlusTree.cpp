@@ -521,6 +521,7 @@ void BPlusTree::deleteRecord(float key){
         if (key == current->keys[i]) {
             current->keys.erase(current->keys.begin()+i);
             current->recordPtrs.erase(current->recordPtrs.begin()+i);
+            current->minKey = current->keys[0];
             replacementKey = current->keys[i]; // get the new key in its place
             found = true;
             break;
@@ -542,142 +543,200 @@ void BPlusTree::deleteRecord(float key){
             if (key == j) {
 //                cout << "key found in parent" << endl;
                 j = replacementKey;
+                parent->minKey = parent->childNodePtrs[0]->minKey;
                 break;
             }
         }
     }
 
     // 2. If the leaf ends up with fewer than L/2 - underflow
-
-    int minLeafSize = (BPlusNodeSize + 1) / 2;
-
-
-
-    int leafSize = static_cast<int>(current->keys.size());
-
+    int minLeafSize;
     // check for lead underflow
+    for (int i = path.size()-1; i >= 0; i--) {
+        current = path[i];
+        if (i == path.size()-1) {
+            minLeafSize = (BPlusNodeSize + 1) / 2;
+        }
+        else {
+            minLeafSize = BPlusNodeSize / 2;
+        }
+        int leafSize = static_cast<int>(current->keys.size());
+        if (leafSize < minLeafSize && i > 0) {
+    //        cout << "leaf underflow" << endl;
+            // 2a. Adopt data from a neighbour, update the parent
+            BPNode *parent = path[i - 1];
 
-    if (leafSize < minLeafSize) {
-//        cout << "leaf underflow" << endl;
-        // 2a. Adopt data from a neighbour, update the parent
-        BPNode *parent = path[path.size() - 2];
-
-        // find the index of the current node in the parent
-        int currentIdx = 0;
-        for (int i = 0; i < parent->childNodePtrs.size(); i++) {
-            if (parent->childNodePtrs[i] == current) {
-                currentIdx = i;
-                break;
+            // find the index of the current node in the parent
+            int currentIdx = 0;
+            for (int i = 0; i < parent->childNodePtrs.size(); i++) {
+                if (parent->childNodePtrs[i] == current) {
+                    currentIdx = i;
+                    break;
+                }
             }
-        }
 
-        // find the left and right neighbours of the current node
-        BPNode *leftNeighbour = nullptr;
-        BPNode *rightNeighbour = nullptr;
-        if (currentIdx > 0) {
-            leftNeighbour = parent->childNodePtrs[currentIdx - 1];
-        }
-        if (currentIdx < parent->childNodePtrs.size() - 1) {
-            rightNeighbour = parent->childNodePtrs[currentIdx + 1];
-        }
-
-        // if the left neighbour has more than L/2 elements, adopt from the left neighbour
-        if (leftNeighbour != nullptr && leftNeighbour->keys.size() > minLeafSize) {
-
-            // debug
-//            cout << "value of currentIdx: " << currentIdx << endl;
-//            cout << "parent key: " << parent->keys[currentIdx - 1] << endl;
-//            cout << "parent key size: " << parent->keys.size() << endl;
-//            cout << "current value: " << parent->keys[currentIdx - 1] << endl;
-//            cout << "value to be updated: " << leftNeighbour->keys[leftNeighbour->keys.size() - 1] << endl;
-            // end debug
-
-            // print all keys in the parent
-//            cout << "parent keys: ";
-            for (float pKey: parent->keys) {
-//                cout << pKey << " ";
+            // find the left and right neighbours of the current node
+            BPNode *leftNeighbour = nullptr;
+            BPNode *rightNeighbour = nullptr;
+            if (currentIdx > 0) {
+                leftNeighbour = parent->childNodePtrs[currentIdx - 1];
             }
-//            cout << endl;
-
-//            cout << "adopt from left neighbour" << endl;
-            // adopt the last element from the left neighbour
-            current->keys.insert(current->keys.begin(), leftNeighbour->keys[leftNeighbour->keys.size() - 1]);
-            current->recordPtrs.insert(current->recordPtrs.begin(),
-                                       leftNeighbour->recordPtrs[leftNeighbour->recordPtrs.size() - 1]);
-
-            // update the parent - not working
-//            cout << "parent key before: " << parent->keys[currentIdx - 1] << endl;
-            parent->keys[currentIdx - 1] = leftNeighbour->keys[leftNeighbour->keys.size() - 1];
-//            cout << "parent key after: " << parent->keys[currentIdx - 1] << endl;
-
-            // remove the adopted element from the left neighbour
-            leftNeighbour->keys.erase(leftNeighbour->keys.end() - 1);
-            leftNeighbour->recordPtrs.erase(leftNeighbour->recordPtrs.end() - 1);
-        }
-
-            // if the right neighbour has more than L/2 elements, adopt from the right neighbour
-        else if (rightNeighbour != nullptr && rightNeighbour->keys.size() > minLeafSize) {
-            // print all keys in the parent
-//            cout << "parent keys: ";
-            for (float pKey: parent->keys) {
-//                cout << pKey << " ";
+            if (currentIdx < parent->childNodePtrs.size() - 1) {
+                rightNeighbour = parent->childNodePtrs[currentIdx + 1];
             }
-            cout << endl;
+            // if the left neighbour has more than L/2 elements, adopt from the left neighbour
+            if (leftNeighbour != nullptr && leftNeighbour->keys.size() > minLeafSize) {
 
-//            cout << "adopt from right neighbour" << endl;
-            // adopt the first element from the right neighbour
+                // debug
+    //            cout << "value of currentIdx: " << currentIdx << endl;
+    //            cout << "parent key: " << parent->keys[currentIdx - 1] << endl;
+    //            cout << "parent key size: " << parent->keys.size() << endl;
+    //            cout << "current value: " << parent->keys[currentIdx - 1] << endl;
+    //            cout << "value to be updated: " << leftNeighbour->keys[leftNeighbour->keys.size() - 1] << endl;
+                // end debug
 
-            current->keys.push_back(rightNeighbour->keys[0]);
-            current->recordPtrs.push_back(rightNeighbour->recordPtrs[0]);
+                // print all keys in the parent
+    //            cout << "parent keys: ";
+                for (float pKey: parent->keys) {
+    //                cout << pKey << " ";
+                }
+    //            cout << endl;
+    //            cout << "adopt from left neighbour" << endl;
+                // adopt the last element from the left neighbour
+                current->keys.insert(current->keys.begin(), leftNeighbour->keys[leftNeighbour->keys.size() - 1]);
+                if (current->isLeaf) {
+                    current->recordPtrs.insert(current->recordPtrs.begin(),
+                                               leftNeighbour->recordPtrs[leftNeighbour->recordPtrs.size() - 1]);
+                }
+                else {
+                    current->childNodePtrs.insert(current->childNodePtrs.begin(),
+                                                  leftNeighbour->childNodePtrs[leftNeighbour->childNodePtrs.size() - 1]);
+                    current->keys[0]= current->childNodePtrs[1]->minKey;
+                    current->minKey = current->childNodePtrs[0]->minKey;
+                }
+                // update the parent - not working
+    //            cout << "parent key before: " << parent->keys[currentIdx - 1] << endl;
+                if (current->isLeaf) {
+                    parent->keys[currentIdx - 1] = leftNeighbour->keys[leftNeighbour->keys.size() - 1];
+                }
+                else {
+//                    parent->keys[currentIdx - 1] = leftNeighbour->childNodePtrs[0]->minKey;
+                    parent->keys[currentIdx - 1] = current->minKey;
+                }
+    //            cout << "parent key after: " << parent->keys[currentIdx - 1] << endl;
 
-            // update the parent
-//            cout << "parent key before: " << parent->keys[currentIdx] << endl;
-            parent->keys[currentIdx] = rightNeighbour->keys[1];
-//            cout << "parent key after: " << parent->keys[currentIdx] << endl;
+                // remove the adopted element from the left neighbour
+                leftNeighbour->keys.erase(leftNeighbour->keys.end() - 1);
+                if (current->isLeaf) {
+                    leftNeighbour->recordPtrs.erase(leftNeighbour->recordPtrs.end() - 1);
+                }
+                else {
+                    leftNeighbour->childNodePtrs.erase(leftNeighbour->childNodePtrs.end() - 1);
+                }
+            }
 
-            // remove the adopted element from the right neighbour
-            rightNeighbour->keys.erase(rightNeighbour->keys.begin());
-            rightNeighbour->recordPtrs.erase(rightNeighbour->recordPtrs.begin());
-        }
+                // if the right neighbour has more than L/2 elements, adopt from the right neighbour
+            else if (rightNeighbour != nullptr && rightNeighbour->keys.size() > minLeafSize) {
+                // print all keys in the parent
+    //            cout << "parent keys: ";
+                for (float pKey: parent->keys) {
+//                    cout << pKey << " ";
+                }
+                cout << endl;
 
-            // if adoption won't work, merge with neighbour - may result in parent underflow (todo: to be handled)
-        else        {
-//            cout << "merge with neighbour" << endl;
-            // merge with the left neighbour
-            if (leftNeighbour != nullptr) {
-                // move all elements from the current node to the left neighbour
-                leftNeighbour->keys.insert(leftNeighbour->keys.end(), current->keys.begin(), current->keys.end());
-                leftNeighbour->recordPtrs.insert(leftNeighbour->recordPtrs.end(), current->recordPtrs.begin(),
-                                                 current->recordPtrs.end());
+    //            cout << "adopt from right neighbour" << endl;
+                // adopt the first element from the right neighbour
+
+                current->keys.push_back(rightNeighbour->keys[0]);
+                if (current->isLeaf) {
+                    current->recordPtrs.push_back(rightNeighbour->recordPtrs[0]);
+                }
+                else {
+                    current->childNodePtrs.push_back(rightNeighbour->childNodePtrs[0]);
+                    current->keys[current->keys.size()-1] = rightNeighbour->minKey;
+                }
 
                 // update the parent
-                parent->keys.erase(parent->keys.begin() + currentIdx - 1);
-                parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx);
+    //            cout << "parent key before: " << parent->keys[currentIdx] << endl;
+                if (current->isLeaf) {
+                    parent->keys[currentIdx] = rightNeighbour->keys[1];
+                }
+    //            cout << "parent key after: " << parent->keys[currentIdx] << endl;
 
-                // update the nextLeaf pointer
-                leftNeighbour->nextLeaf = current->nextLeaf;
+                // remove the adopted element from the right neighbour
+                rightNeighbour->keys.erase(rightNeighbour->keys.begin());
+                if (current->isLeaf) {
+                    rightNeighbour->recordPtrs.erase(rightNeighbour->recordPtrs.begin());
+                }
+                else {
+                    rightNeighbour->childNodePtrs.erase(rightNeighbour->childNodePtrs.begin());
+                    rightNeighbour->minKey = rightNeighbour->childNodePtrs[0]->minKey;
+                }
 
-                // delete the current node
-                delete current;
+                if (!current->isLeaf) {
+                    parent->keys[currentIdx] = rightNeighbour->minKey;
+                }
             }
 
-                // merge with the right neighbour
-            else if (rightNeighbour != nullptr) {
-                // move all elements from the right neighbour to the current node
-                current->keys.insert(current->keys.end(), rightNeighbour->keys.begin(), rightNeighbour->keys.end());
-                current->recordPtrs.insert(current->recordPtrs.end(), rightNeighbour->recordPtrs.begin(),
-                                           rightNeighbour->recordPtrs.end());
+                // if adoption won't work, merge with neighbour - may result in parent underflow
+            else {
+    //            cout << "merge with neighbour" << endl;
+                // merge with the left neighbour
+                if (leftNeighbour != nullptr) {
+                    // move all elements from the current node to the left neighbour
+                    if (current->isLeaf) {
+                        leftNeighbour->recordPtrs.insert(leftNeighbour->recordPtrs.end(), current->recordPtrs.begin(),
+                                                         current->recordPtrs.end());
+                    }
+                    else {
+                        leftNeighbour->childNodePtrs.insert(leftNeighbour->childNodePtrs.end(), current->childNodePtrs.begin(),
+                                                            current->childNodePtrs.end());
+                        current->keys.push_back(current->minKey);
+                    }
+                    leftNeighbour->keys.insert(leftNeighbour->keys.end(), current->keys.begin(), current->keys.end());
 
-                // update the parent
-                parent->keys.erase(parent->keys.begin() + currentIdx);
-                parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx + 1);
+                    // update the parent
+                    parent->keys.erase(parent->keys.begin() + currentIdx - 1);
+                    parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx);
 
-                // update the nextLeaf pointer
-                current->nextLeaf = rightNeighbour->nextLeaf;
+                    // update the nextLeaf pointer
+                    leftNeighbour->nextLeaf = current->nextLeaf;
 
-                // delete the right neighbour
-                delete rightNeighbour;
+                    // delete the current node
+                    delete current;
+                }
+
+                    // merge with the right neighbour
+                else if (rightNeighbour != nullptr) {
+                    // move all elements from the right neighbour to the current node
+
+                    if (current->isLeaf) {
+                        current->recordPtrs.insert(current->recordPtrs.end(), rightNeighbour->recordPtrs.begin(),
+                                                   rightNeighbour->recordPtrs.end());
+                        current->keys.insert(current->keys.end(), rightNeighbour->keys.begin(), rightNeighbour->keys.end());
+                    }
+                    else {
+                        current->childNodePtrs.insert(current->childNodePtrs.end(), rightNeighbour->childNodePtrs.begin(),
+                                                     rightNeighbour->childNodePtrs.end());
+                        current->keys[current->keys.size()-1] = rightNeighbour->childNodePtrs[0]->minKey;
+                        current->keys.insert(current->keys.end(), rightNeighbour->keys.begin(), rightNeighbour->keys.end());
+                    }
+
+                    // update the parent
+                    parent->keys.erase(parent->keys.begin() + currentIdx);
+                    parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx + 1);
+
+                    // update the nextLeaf pointer
+                    current->nextLeaf = rightNeighbour->nextLeaf;
+
+                    // delete the right neighbour
+                    delete rightNeighbour;
+                }
             }
+    }
+
+        if (root->keys.empty() && !root->childNodePtrs.empty()) {
+            root = root->childNodePtrs[0];
         }
     }
 };
