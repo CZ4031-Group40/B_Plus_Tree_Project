@@ -486,10 +486,7 @@ void BPlusTree::calculateStatistics(BPNode *current) {
 }
 
 void BPlusTree::deleteRecord(float key){
-    if (root == nullptr)
-    {
-        return;
-    }
+    if (root == nullptr) return; // tree is empty, nothing to delete
     BPNode *current = root;
 
     vector<BPNode *> path;
