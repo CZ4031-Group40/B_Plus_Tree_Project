@@ -552,7 +552,7 @@ void BPlusTree::deleteRecord(float key){
     // 2. If the leaf ends up with fewer than L/2 - underflow
     int minLeafSize;
     // check for lead underflow
-    for (int i = path.size()-1; i >= 0; i--) {
+    for (int i = path.size()-1; i > 0; i--) {
         current = path[i];
         if (i == path.size()-1) {
             minLeafSize = (BPlusNodeSize + 1) / 2;
@@ -561,19 +561,19 @@ void BPlusTree::deleteRecord(float key){
             minLeafSize = BPlusNodeSize / 2;
         }
         int leafSize = static_cast<int>(current->keys.size());
-        if (leafSize < minLeafSize && i > 0) {
+        BPNode *parent = path[i - 1];
+        int currentIdx = 0;
+        for (int j = 0; j < parent->childNodePtrs.size(); j++) {
+            if (parent->childNodePtrs[j] == current) {
+                currentIdx = j;
+                break;
+            }
+        }
+        if (leafSize < minLeafSize) {
     //        cout << "leaf underflow" << endl;
             // 2a. Adopt data from a neighbour, update the parent
-            BPNode *parent = path[i - 1];
 
             // find the index of the current node in the parent
-            int currentIdx = 0;
-            for (int i = 0; i < parent->childNodePtrs.size(); i++) {
-                if (parent->childNodePtrs[i] == current) {
-                    currentIdx = i;
-                    break;
-                }
-            }
 
             // find the left and right neighbours of the current node
             BPNode *leftNeighbour = nullptr;
@@ -607,6 +607,7 @@ void BPlusTree::deleteRecord(float key){
                 if (current->isLeaf) {
                     current->recordPtrs.insert(current->recordPtrs.begin(),
                                                leftNeighbour->recordPtrs[leftNeighbour->recordPtrs.size() - 1]);
+                    current->minKey = current->keys[0];
                 }
                 else {
                     current->childNodePtrs.insert(current->childNodePtrs.begin(),
@@ -623,12 +624,14 @@ void BPlusTree::deleteRecord(float key){
 //                    parent->keys[currentIdx - 1] = leftNeighbour->childNodePtrs[0]->minKey;
                     parent->keys[currentIdx - 1] = current->minKey;
                 }
+                parent->minKey = parent->childNodePtrs[0]->minKey;
     //            cout << "parent key after: " << parent->keys[currentIdx - 1] << endl;
 
                 // remove the adopted element from the left neighbour
                 leftNeighbour->keys.erase(leftNeighbour->keys.end() - 1);
                 if (current->isLeaf) {
                     leftNeighbour->recordPtrs.erase(leftNeighbour->recordPtrs.end() - 1);
+                    leftNeighbour->minKey = leftNeighbour->keys[0];
                 }
                 else {
                     leftNeighbour->childNodePtrs.erase(leftNeighbour->childNodePtrs.end() - 1);
@@ -650,6 +653,7 @@ void BPlusTree::deleteRecord(float key){
                 current->keys.push_back(rightNeighbour->keys[0]);
                 if (current->isLeaf) {
                     current->recordPtrs.push_back(rightNeighbour->recordPtrs[0]);
+                    current->minKey = current->keys[0];
                 }
                 else {
                     current->childNodePtrs.push_back(rightNeighbour->childNodePtrs[0]);
@@ -660,6 +664,7 @@ void BPlusTree::deleteRecord(float key){
     //            cout << "parent key before: " << parent->keys[currentIdx] << endl;
                 if (current->isLeaf) {
                     parent->keys[currentIdx] = rightNeighbour->keys[1];
+                    parent->minKey = parent->childNodePtrs[0]->minKey;
                 }
     //            cout << "parent key after: " << parent->keys[currentIdx] << endl;
 
@@ -667,6 +672,7 @@ void BPlusTree::deleteRecord(float key){
                 rightNeighbour->keys.erase(rightNeighbour->keys.begin());
                 if (current->isLeaf) {
                     rightNeighbour->recordPtrs.erase(rightNeighbour->recordPtrs.begin());
+                    rightNeighbour->minKey = rightNeighbour->keys[0];
                 }
                 else {
                     rightNeighbour->childNodePtrs.erase(rightNeighbour->childNodePtrs.begin());
@@ -694,10 +700,11 @@ void BPlusTree::deleteRecord(float key){
                         current->keys.push_back(current->minKey);
                     }
                     leftNeighbour->keys.insert(leftNeighbour->keys.end(), current->keys.begin(), current->keys.end());
-
+                    leftNeighbour->minKey = leftNeighbour->keys[0];
                     // update the parent
                     parent->keys.erase(parent->keys.begin() + currentIdx - 1);
                     parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx);
+                    parent->minKey = parent->childNodePtrs[0]->minKey;
 
                     // update the nextLeaf pointer
                     leftNeighbour->nextLeaf = current->nextLeaf;
@@ -714,6 +721,7 @@ void BPlusTree::deleteRecord(float key){
                         current->recordPtrs.insert(current->recordPtrs.end(), rightNeighbour->recordPtrs.begin(),
                                                    rightNeighbour->recordPtrs.end());
                         current->keys.insert(current->keys.end(), rightNeighbour->keys.begin(), rightNeighbour->keys.end());
+                        current->minKey = current->keys[0];
                     }
                     else {
                         current->childNodePtrs.insert(current->childNodePtrs.end(), rightNeighbour->childNodePtrs.begin(),
@@ -725,6 +733,7 @@ void BPlusTree::deleteRecord(float key){
                     // update the parent
                     parent->keys.erase(parent->keys.begin() + currentIdx);
                     parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx + 1);
+                    parent->minKey = parent->childNodePtrs[0]->minKey;
 
                     // update the nextLeaf pointer
                     current->nextLeaf = rightNeighbour->nextLeaf;
@@ -734,6 +743,11 @@ void BPlusTree::deleteRecord(float key){
                 }
             }
     }
+
+        else {
+            parent->keys[currentIdx - 1] = parent->childNodePtrs[currentIdx]->minKey;
+            parent->minKey = parent->childNodePtrs[0]->minKey;
+        }
 
         if (root->keys.empty() && !root->childNodePtrs.empty()) {
             root = root->childNodePtrs[0];
