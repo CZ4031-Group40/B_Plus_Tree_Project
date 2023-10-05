@@ -89,16 +89,19 @@ int main() {
                     count+=1;
                     istringstream iss(line);
                     NBARecord newRecord{};
-                    iss >> newRecord.date;
-                    iss >> newRecord.teamID;
-                    iss >> newRecord.homePoints;
-                    iss >> newRecord.homeFGPercentage;
-                    iss >> newRecord.homeFTPercentage;
-                    iss >> newRecord.homeFG3Percentage;
-                    iss >> newRecord.homeAssist;
-                    iss >> newRecord.homeRebound;
-                    iss >> newRecord.homeTeamWins;
-
+                    if (!(iss >> newRecord.date) ||
+                        !(iss >> newRecord.teamID) ||
+                        !(iss >> newRecord.homePoints) ||
+                        !(iss >> newRecord.homeFGPercentage) ||
+                        !(iss >> newRecord.homeFTPercentage) ||
+                        !(iss >> newRecord.homeFG3Percentage) ||
+                        !(iss >> newRecord.homeAssist) ||
+                        !(iss >> newRecord.homeRebound) ||
+                        !(iss >> newRecord.homeTeamWins)) {
+                        cerr << "Error reading values from the line" << count << ". Skipping the line." << endl;
+                        continue; // Skip this line and move to the next one.
+                    }
+                    
                     void *recordPtr =  storage.storeRecord(newRecord);
                     bPlusTree.insertRecord(newRecord.homeFGPercentage,recordPtr);
 

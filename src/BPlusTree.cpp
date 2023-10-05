@@ -405,6 +405,86 @@ void BPlusTree::displayTree(BPNode *current) {
 
 }
 
+void BPlusTree::displayRootNode() {
+    if (root == nullptr) {
+        cout << "The tree is empty." << endl;
+        return;
+    }
+
+    cout << "Keys of root node:" << endl;
+
+    for (int j = 0; j < root->keys.size(); j++) {
+        cout << "|" <<"";
+        cout << root->keys[j] << " ";
+        cout << "|" <<"";
+
+    }
+
+    cout << "\t";
+    cout << endl;
+    cout << endl;
+
+}
+
+void BPlusTree::getNodeSize() {
+    cout << "Node Size parameter, n: " << root->size << endl;
+}
+
+void BPlusTree::calculateStatistics(BPNode *current) {
+    if (current == nullptr) {
+        cout << "The tree is empty." << endl;
+        return;
+    }
+
+    int totalNodes = 0;
+    int totalSize = 0;
+    int largestNodeSize = 0;
+
+    queue<BPNode *> q;
+    q.push(current);
+
+    int level = 0;
+
+    while (!q.empty()) {
+        int nodesAtLevel = q.size();
+
+        for (int i = 0; i < nodesAtLevel; i++) {
+            BPNode *node = q.front();
+            q.pop();
+
+            // Calculate the size of the node dynamically based on its components
+            int nodeSize = sizeof(*node)+
+                           sizeof(float) * node->keys.size() +
+                           sizeof(BPNode *) * node->childNodePtrs.size() +
+                           sizeof(NBARecords *) * node->recordPtrs.size();
+
+            totalSize += nodeSize;
+            totalNodes++;
+
+            if (nodeSize > largestNodeSize) {
+                largestNodeSize = nodeSize;
+            }
+
+            for (int j = 0; j < node->childNodePtrs.size(); j++) {
+                if (node->childNodePtrs[j] != nullptr) {
+                    q.push(node->childNodePtrs[j]);
+                }
+            }
+        }
+
+        level++;
+    }
+
+    if (level > 0) {
+        cout << "Total Levels: " << level << endl;
+        cout << "Total Nodes: " << totalNodes << endl;
+        cout << "Average Node Size in Bytes: " << (totalSize / totalNodes) << " bytes" << endl;
+        cout << "Largest Node Size in Bytes: " << largestNodeSize << " bytes" << endl;
+    }
+}
+
+
+
 void BPlusTree::deleteRecord() {
 
 }

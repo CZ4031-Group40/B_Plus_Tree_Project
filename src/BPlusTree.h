@@ -6,19 +6,19 @@
 
 using namespace std;
 
-const unsigned int BPlusNodeSize = 2;
+const unsigned int BPlusNodeSize = 36;
 
 class BPNode{
     friend class BPlusTree;
 
 private:
-    int size = BPlusNodeSize;
-    bool isLeaf;
-    float minKey;
-    BPNode *nextLeaf = nullptr;
-    vector<float> keys;
-    vector<BPNode *> childNodePtrs;
-    vector<NBARecords *> recordPtrs;
+    int size = BPlusNodeSize; // 4 bytes
+    bool isLeaf; // 1 bytes
+    float minKey; // 4 byte
+    BPNode *nextLeaf = nullptr; // 8 byte
+    vector<float> keys; // 4 byte * number of keys + 32 for vector
+    vector<BPNode *> childNodePtrs; // 8 byte * number of child + 32 for vector
+    vector<NBARecords *> recordPtrs; // 8 byte * number of records + 32 for vector
 
 public:
     BPNode(bool isLeaf);
@@ -42,6 +42,9 @@ public:
     NBARecords* searchRecord(float key);
     void displayTree(BPNode *current);
     BPNode* getRoot();
+    void calculateStatistics(BPNode *current);
+    void displayRootNode();
+    void getNodeSize();
 
 };
 
