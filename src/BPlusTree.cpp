@@ -691,7 +691,7 @@ void BPlusTree::handleUnderflow(
                     cout << "DEBUG: no parent underflow -- gg to delete parent->keys[" << currentIdx << "]" << endl;
 
                     // update the parent
-                parent->keys.erase(parent->keys.begin() + currentIdx - 1); // TODO: handle underflow from this
+                parent->keys.erase(parent->keys.begin() + currentIdx - 1);
                 parent->childNodePtrs.erase(parent->childNodePtrs.begin() + currentIdx);
                 parent->minKey = parent->childNodePtrs[0]->minKey;
                 }
