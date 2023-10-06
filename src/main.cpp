@@ -208,18 +208,32 @@ int main() {
                 }
                 int numOfRecords = 0;
                 start = chrono::high_resolution_clock::now();
-                for (auto &recordPtr: unsortedRecordPtrs) {
-                    numOfRecords++;
+                void* storagePtr = storage.getStoragePtr();
+                unsigned int numOfBlocks = storage.getNumOfAllocatedBlocks();
+                unsigned int recordPerBlock = storage.getRecordsPerBlock();
+
+                for(unsigned int i=0;i<numOfBlocks;i++){
+                    NBARecord* recordPtr = (NBARecord*) (storagePtr) + (i * recordPerBlock);
+                    unsigned int blockNumOfRecords = recordPerBlock;
+                    if(i == numOfBlocks - 1){
+                        blockNumOfRecords = storage.getCurrBlockUsedSpace() / sizeof(NBARecord);
+                    }
+                    for(unsigned int j=0;j<blockNumOfRecords;j++){
+                        if(recordPtr->homeFGPercentage == queriedFGP){
+                            numOfRecords++;
+                        }
+                        recordPtr++;
+                    }
                 }
                 end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken_linear_scan = end - start;
                 cout << "The average of “FG3_PCT_home” of the records that are returned: " << FG3_average << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time of the retrieval process: " << time_taken.count() << endl;
+                cout << "The running time of the retrieval process: " << time_taken.count()*1000 << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumOfAllocatedBlocks() << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
+                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count()*1000 << endl;
                 cout << endl;
                 break;
             }

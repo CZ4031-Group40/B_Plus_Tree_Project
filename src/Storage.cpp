@@ -46,3 +46,17 @@ unsigned int Storage::getNumOfAllocatedBlocks() const {
 unsigned int Storage::getRecordsPerBlock() const {
     return blockSize / sizeof(NBARecord);
 }
+
+void *Storage::getStoragePtr() {
+    return storagePtr;
+}
+
+//get currblockusedspace
+unsigned int Storage::getCurrBlockUsedSpace() const {
+    return currBlockUsedSpace;
+}
+
+unsigned int Storage::getBlockSize() const{
+    return blockSize;
+}
+
