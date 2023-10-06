@@ -338,7 +338,9 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
 }
 
 NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
-    BPNode *firstNode = searchNode(startKey);
+    tuple<BPNode *, int> searchNodeReturned = searchNode(startKey);
+    BPNode *firstNode = get<0>(searchNodeReturned);
+    int no_of_node_accessed = get<1>(searchNodeReturned);
     auto *recordVectorPtr = new NBARecords();
     int i = 0;
     while (i < firstNode->keys.size()) {
@@ -354,6 +356,7 @@ NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
 
     if (i == firstNode->recordPtrs.size()) {
         firstNode = firstNode->nextLeaf;
+        no_of_node_accessed++;
         i = 0;
     }
 
@@ -364,18 +367,22 @@ NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
         i++;
         if (i == firstNode->keys.size()) {
             firstNode = firstNode->nextLeaf;
+            no_of_node_accessed++;
             i = 0;
         }
     }
-
+    cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
+    cout << "=======================================================================================" << endl;
+    cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
+    cout << "=======================================================================================" << endl;
     return recordVectorPtr;
 }
 
 // Helper function
-BPNode *BPlusTree::searchNode(float key) {
+tuple<BPNode *, int> BPlusTree::searchNode(float key) {
     int no_of_node_accessed = 0;
     if (root == nullptr) {
-        return nullptr;
+        return tuple<BPNode*, int>{nullptr,0};
     }
     BPNode *current = root;
     while (!current->isLeaf) {
@@ -386,21 +393,25 @@ BPNode *BPlusTree::searchNode(float key) {
                 break;
             }
 
-            if (i == current->keys.size()-1) {
-                current = current->childNodePtrs[i+1];
+            if (i == current->keys.size() - 1) {
+                current = current->childNodePtrs[i + 1];
                 break;
             }
         }
     }
-    cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
-    cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
-    return current;
+    return tuple<BPNode *, int>{current,no_of_node_accessed};
 }
 
 NBARecords *BPlusTree::searchRecord(float key) {
-    BPNode *foundNode = searchNode(key);
+    tuple<BPNode *, int> searchNodeReturned = searchNode(key);
+    BPNode *foundNode = get<0>(searchNodeReturned);
+    int no_of_node_accessed = get<1>(searchNodeReturned);
     for (int i = 0; i < foundNode->keys.size(); i++) {
         if (key == foundNode->keys[i]) {
+            cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
+            cout << "=======================================================================================" << endl;
+            cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
+            cout << "=======================================================================================" << endl;
             return foundNode->recordPtrs[i];
         }
     }
