@@ -58,8 +58,8 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         }
     }
 
-    //Make sure that element have at least floor[(n+1)/2]
-    if(bpNode->keys.size() < (bpNode->size + 1) / 2){
+    //Make sure that the last node have at least floor[(n+1)/2] elements except if it's the only node (means it is root)
+    if(bpNode->keys.size() < (bpNode->size + 1) / 2 && bpNodes.size()>1){
         BPNode *lastNode = bpNodes[bpNodes.size()-1];
         int elementsToMove = lastNode->keys.size() - (lastNode->keys.size() + bpNode->keys.size()) / 2;
 
