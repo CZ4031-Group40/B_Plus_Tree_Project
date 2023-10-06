@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <chrono>
 #include "BPlusTree.h"
 #include "Storage.h"
 
@@ -282,7 +283,7 @@ int main() {
                 cout << "=======================================================================================" << endl;
                 cout << "The running time of the retrieval process: " << time_taken.count() << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumOfAllocatedBlocks() << endl;
                 cout << "=======================================================================================" << endl;
                 cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
                 cout << endl;
