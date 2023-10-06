@@ -182,11 +182,10 @@ int main() {
                 // Calculate running time
                 auto start = chrono::high_resolution_clock::now();
                 tuple<NBARecords *, int> queriedRecords = bPlusTree.searchRecord(queriedFGP);
-                NBARecords *queriedData = get<0>(queriedRecords);
-                int no_of_node_accessed = get<1>(queriedRecords);
-
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
+                NBARecords *queriedData = get<0>(queriedRecords);
+                int no_of_node_accessed = get<1>(queriedRecords);
                 float FG3_total = 0;
                 float FG3_average = 0;
                 if (queriedData == nullptr) {
@@ -209,16 +208,33 @@ int main() {
                     }
                     FG3_average = FG3_total/queriedData->records.size();
                 }
-                int numOfRecords = 0;
+                int recordsPerBlock = storage.getRecordsPerBlock();
+                int numberOfRecordsRetrieved = queriedData->records.size();
+                int no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(numberOfRecordsRetrieved/recordsPerBlock);
+
                 start = chrono::high_resolution_clock::now();
-                for (auto &recordPtr: unsortedRecordPtrs) {
-                    numOfRecords++;
+                auto *queriedData2 = new NBARecords();
+                auto *storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
+                void *curBlockPtr = storagePtr;
+                int recordSize = sizeof(NBARecord);
+                void *curRecordPtr;
+                unsigned int numOfAllocatedBlocks = storage.getNumOfAllocatedBlocks();
+                for (int i = 0; i < numOfAllocatedBlocks; i++) {
+                    curBlockPtr = storagePtr + (i * blockSize);
+                    for (int j = 0; j < recordsPerBlock; j++) {
+                        curRecordPtr = static_cast<unsigned char*>(curBlockPtr) + (j * recordSize);
+                        auto *curNBARecord = static_cast<NBARecord *>(curRecordPtr);
+                        if (curNBARecord->homeFGPercentage == queriedFGP) {
+                            queriedData2->records.push_back(curNBARecord);
+                        }
+                    }
                 }
                 end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken_linear_scan = end - start;
+
                 cout << "Number of index node accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
+                cout << "Number of data blocks accessed: " << no_of_blocks_accessed << endl;
                 cout << "=======================================================================================" << endl;
                 cout << "The average of \"FG3_PCT_home\" of the records that are returned: " << FG3_average << endl;
                 cout << "=======================================================================================" << endl;
@@ -239,11 +255,10 @@ int main() {
                 cout << "=======================================EXPERIMENT 4====================================" << endl;
                 auto start = chrono::high_resolution_clock::now();
                 tuple<NBARecords *, int> queriedRecords = bPlusTree.searchRangedRecord(startKey, endKey);
-                NBARecords *queriedData = get<0>(queriedRecords);
-                int no_of_node_accessed = get<1>(queriedRecords);
-
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
+                NBARecords *queriedData = get<0>(queriedRecords);
+                int no_of_node_accessed = get<1>(queriedRecords);
                 float FG3_total = 0;
                 float FG3_average = 0;
                 if (queriedData == nullptr) {
@@ -266,16 +281,31 @@ int main() {
                     }
                     FG3_average = FG3_total/queriedData->records.size();
                 }
-                int numOfRecords = 0;
+                int recordsPerBlock = storage.getRecordsPerBlock();
+                int numberOfRecordsRetrieved = queriedData->records.size();
+                int no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(numberOfRecordsRetrieved/recordsPerBlock);
                 start = chrono::high_resolution_clock::now();
-                for (auto &recordPtr: unsortedRecordPtrs) {
-                    numOfRecords++;
+                auto queriedData2 = new NBARecords();
+                auto *storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
+                void *curBlockPtr = storagePtr;
+                int recordSize = sizeof(NBARecord);
+                void *curRecordPtr;
+                unsigned int numOfAllocatedBlocks = storage.getNumOfAllocatedBlocks();
+                for (int i = 0; i < numOfAllocatedBlocks; i++) {
+                    curBlockPtr = storagePtr + (i * blockSize);
+                    for (int j = 0; j < recordsPerBlock; j++) {
+                        curRecordPtr = static_cast<unsigned char*>(curBlockPtr) + (j * recordSize);
+                        auto *curNBARecord = static_cast<NBARecord *>(curRecordPtr);
+                        if (curNBARecord->homeFGPercentage >= startKey && curNBARecord->homeFGPercentage <= endKey) {
+                            queriedData2->records.push_back(curNBARecord);
+                        }
+                    }
                 }
                 end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken_linear_scan = end - start;
                 cout << "Number of index node accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
+                cout << "Number of data blocks accessed: " << no_of_blocks_accessed << endl;
                 cout << "=======================================================================================" << endl;
                 cout << "The average of \"FG3_PCT_home\" of the records that are returned: " << FG3_average << endl;
                 cout << "=======================================================================================" << endl;
