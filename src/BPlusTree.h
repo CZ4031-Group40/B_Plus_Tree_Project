@@ -39,9 +39,9 @@ public:
 
     void insertRecord(float recordKey, void* recordAddress);
     void deleteRecord();
-    NBARecords* searchRangedRecord(float startKey, float endKey);
+    tuple<NBARecords *,int> searchRangedRecord(float startKey, float endKey);
     tuple<BPNode *, int> searchNode(float key);
-    NBARecords* searchRecord(float key);
+    tuple<NBARecords *,int> searchRecord(float key);
     void displayTree(BPNode *current);
     BPNode* getRoot();
     void calculateStatistics(BPNode *current);

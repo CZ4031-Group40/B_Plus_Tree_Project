@@ -337,7 +337,7 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
     return;
 }
 
-NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
+tuple<NBARecords *,int> BPlusTree::searchRangedRecord(float startKey, float endKey) {
     tuple<BPNode *, int> searchNodeReturned = searchNode(startKey);
     BPNode *firstNode = get<0>(searchNodeReturned);
     int no_of_node_accessed = get<1>(searchNodeReturned);
@@ -371,11 +371,8 @@ NBARecords *BPlusTree::searchRangedRecord(float startKey, float endKey) {
             i = 0;
         }
     }
-    cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
-    cout << "=======================================================================================" << endl;
-    cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
-    cout << "=======================================================================================" << endl;
-    return recordVectorPtr;
+
+    return tuple<NBARecords *,int>{recordVectorPtr, no_of_node_accessed+1};
 }
 
 // Helper function
@@ -402,21 +399,17 @@ tuple<BPNode *, int> BPlusTree::searchNode(float key) {
     return tuple<BPNode *, int>{current,no_of_node_accessed};
 }
 
-NBARecords *BPlusTree::searchRecord(float key) {
+tuple<NBARecords *,int> BPlusTree::searchRecord(float key) {
     tuple<BPNode *, int> searchNodeReturned = searchNode(key);
     BPNode *foundNode = get<0>(searchNodeReturned);
     int no_of_node_accessed = get<1>(searchNodeReturned);
     for (int i = 0; i < foundNode->keys.size(); i++) {
         if (key == foundNode->keys[i]) {
-            cout << "Number of index node accessed: " << no_of_node_accessed+1 << endl;
-            cout << "=======================================================================================" << endl;
-            cout << "Number of data blocks accessed: " << no_of_node_accessed+1 << endl;
-            cout << "=======================================================================================" << endl;
-            return foundNode->recordPtrs[i];
+            return tuple<NBARecords *,int>{foundNode->recordPtrs[i], no_of_node_accessed+1};
         }
     }
 
-    return nullptr;
+    return tuple<NBARecords *, int>{nullptr, no_of_node_accessed+1};
 }
 
 void BPlusTree::displayTree(BPNode *current) {

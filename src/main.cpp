@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <chrono>
 #include "BPlusTree.h"
 #include "Storage.h"
 
@@ -180,7 +181,9 @@ int main() {
                 cout << "=======================================EXPERIMENT 3====================================" << endl;
                 // Calculate running time
                 auto start = chrono::high_resolution_clock::now();
-                NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
+                tuple<NBARecords *, int> queriedRecords = bPlusTree.searchRecord(queriedFGP);
+                NBARecords *queriedData = get<0>(queriedRecords);
+                int no_of_node_accessed = get<1>(queriedRecords);
 
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
@@ -190,18 +193,18 @@ int main() {
                     cout << "Can't find record" << endl;
                 }
                 else {
-                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
+//                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
                     for (int i = 0; i < queriedData->records.size(); i++) {
                         NBARecord *record = queriedData->records[i];
-                        cout << record->date << "\t\t";
-                        cout << record->teamID << "\t\t";
-                        cout << record->homePoints << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
-                        cout << record->homeAssist << "\t\t\t";
-                        cout << record->homeRebound << "\t\t\t";
-                        cout << record->homeTeamWins << endl;
+//                        cout << record->date << "\t\t";
+//                        cout << record->teamID << "\t\t";
+//                        cout << record->homePoints << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
+//                        cout << record->homeAssist << "\t\t\t";
+//                        cout << record->homeRebound << "\t\t\t";
+//                        cout << record->homeTeamWins << endl;
                         FG3_total += record->homeFG3Percentage;
                     }
                     FG3_average = FG3_total/queriedData->records.size();
@@ -213,13 +216,17 @@ int main() {
                 }
                 end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken_linear_scan = end - start;
-                cout << "The average of “FG3_PCT_home” of the records that are returned: " << FG3_average << endl;
+                cout << "Number of index node accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time of the retrieval process: " << time_taken.count() << endl;
+                cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "The average of \"FG3_PCT_home\" of the records that are returned: " << FG3_average << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
+                cout << "The running time of the retrieval process: " << time_taken.count()*1000 << "ms"  << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumOfAllocatedBlocks() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count()*1000 << "ms"  << endl;
                 cout << endl;
                 break;
             }
@@ -231,7 +238,9 @@ int main() {
                 // Calculate running time
                 cout << "=======================================EXPERIMENT 4====================================" << endl;
                 auto start = chrono::high_resolution_clock::now();
-                NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
+                tuple<NBARecords *, int> queriedRecords = bPlusTree.searchRangedRecord(startKey, endKey);
+                NBARecords *queriedData = get<0>(queriedRecords);
+                int no_of_node_accessed = get<1>(queriedRecords);
 
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
@@ -241,18 +250,18 @@ int main() {
                     cout << "Can't find record" << endl;
                 }
                 else {
-                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
+//                    cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
                     for (int i = 0; i < queriedData->records.size(); i++) {
                         NBARecord *record = queriedData->records[i];
-                        cout << record->date << "\t\t";
-                        cout << record->teamID << "\t\t";
-                        cout << record->homePoints << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
-                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
-                        cout << record->homeAssist << "\t\t\t";
-                        cout << record->homeRebound << "\t\t\t";
-                        cout << record->homeTeamWins << endl;
+//                        cout << record->date << "\t\t";
+//                        cout << record->teamID << "\t\t";
+//                        cout << record->homePoints << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFGPercentage << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFTPercentage << "\t\t\t";
+//                        cout << fixed << setprecision(3) << record->homeFG3Percentage << "\t\t\t";
+//                        cout << record->homeAssist << "\t\t\t";
+//                        cout << record->homeRebound << "\t\t\t";
+//                        cout << record->homeTeamWins << endl;
                         FG3_total += record->homeFG3Percentage;
                     }
                     FG3_average = FG3_total/queriedData->records.size();
@@ -264,13 +273,17 @@ int main() {
                 }
                 end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken_linear_scan = end - start;
-                cout << "The average of “FG3_PCT_home” of the records that are returned: " << FG3_average << endl;
+                cout << "Number of index node accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time of the retrieval process: " << time_taken.count() << endl;
+                cout << "Number of data blocks accessed: " << no_of_node_accessed << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "The average of \"FG3_PCT_home\" of the records that are returned: " << FG3_average << endl;
                 cout << "=======================================================================================" << endl;
-                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
+                cout << "The running time of the retrieval process: " << time_taken.count()*1000 << "ms" << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumOfAllocatedBlocks() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count()*1000 << "ms" << endl;
                 cout << endl;
                 break;
             }
