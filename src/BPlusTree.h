@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const unsigned int BPlusNodeSize = 36;
+const unsigned int BPlusNodeSize = 25;
 
 class BPNode{
     friend class BPlusTree;
