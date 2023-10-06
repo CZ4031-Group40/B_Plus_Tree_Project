@@ -18,6 +18,8 @@ int main() {
     Storage storage{static_cast<unsigned int>(100 * pow(10,6)), blockSize };
     BPlusTree bPlusTree; // Create an empty B+ tree
     cerr << "Empty tree is initialised." << endl;
+    vector<tuple<float,void *>> recordPtrs;
+    vector<tuple<float,void *>> unsortedRecordPtrs;
 
     while(true) {
         cout << "Choose an action:" << endl;
@@ -27,15 +29,15 @@ int main() {
         cout << "4. Display tree" << endl;
         cout << "5. Search key" << endl;
         cout << "6. Search key range" << endl;
-        cout << "6. init new tree" << endl;
-        cout << "7. Exit" << endl;
+        cout << "7. init new tree" << endl;
+        cout << "8. Exit" << endl;
 
         int choice;
         cin >> choice;
 
         switch(choice) {
             case 1: {
-                ifstream inputFile("../data/test_duplicate.txt");
+                ifstream inputFile("../data/games.txt");
 
                 if (!inputFile) {
                     cerr << "Failed to open the file." << endl;
@@ -43,7 +45,6 @@ int main() {
                 }
 
                 string line;
-                vector<tuple<float,void *>> recordPtrs;
                 int count = 0;
                 getline(inputFile, line);
                 while(getline(inputFile, line)){
@@ -62,7 +63,8 @@ int main() {
 
                     void *recordPtr =  storage.storeRecord(newRecord);
                     recordPtrs.push_back(tuple<float , void*>{newRecord.homeFGPercentage, recordPtr});
-                }
+                    unsortedRecordPtrs.push_back(tuple<float , void*>{newRecord.homeFGPercentage, recordPtr});
+                  }
                 inputFile.close();
 
                 sort(recordPtrs.begin(), recordPtrs.end(), compareKey);
@@ -83,7 +85,7 @@ int main() {
                 cin >> numRowsToInsert;
 
                 string line;
-                vector<tuple<float,void *>> recordPtrs;
+
                 int count = 0;
                 getline(allData, line);
                 while(count < numRowsToInsert && getline(allData, line)){
@@ -175,20 +177,19 @@ int main() {
                 float queriedFGP = 0.5;
 
                 cout << "Searching for FG_PCT home = " << queriedFGP << endl;
-
+                cout << "=======================================EXPERIMENT 3====================================" << endl;
                 // Calculate running time
                 auto start = chrono::high_resolution_clock::now();
                 NBARecords *queriedData = bPlusTree.searchRecord(queriedFGP);
 
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
-                cout << "Search Time: " << time_taken.count() << endl;
-
+                float FG3_total = 0;
+                float FG3_average = 0;
                 if (queriedData == nullptr) {
                     cout << "Can't find record" << endl;
                 }
                 else {
-                    float FG3_total = 0;
                     cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
                     for (int i = 0; i < queriedData->records.size(); i++) {
                         NBARecord *record = queriedData->records[i];
@@ -203,8 +204,23 @@ int main() {
                         cout << record->homeTeamWins << endl;
                         FG3_total += record->homeFG3Percentage;
                     }
-                        cout << "Average of FG3_PCT_home: " << FG3_total/queriedData->records.size() << endl;
+                    FG3_average = FG3_total/queriedData->records.size();
                 }
+                int numOfRecords = 0;
+                start = chrono::high_resolution_clock::now();
+                for (auto &recordPtr: unsortedRecordPtrs) {
+                    numOfRecords++;
+                }
+                end = chrono::high_resolution_clock::now();
+                chrono::duration<double> time_taken_linear_scan = end - start;
+                cout << "The average of “FG3_PCT_home” of the records that are returned: " << FG3_average << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time of the retrieval process: " << time_taken.count() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
+                cout << endl;
                 break;
             }
             case 6: {
@@ -213,18 +229,18 @@ int main() {
                 cout << "Searching for FG_PCT home between " << startKey << " and " << endKey  << endl;
 
                 // Calculate running time
+                cout << "=======================================EXPERIMENT 4====================================" << endl;
                 auto start = chrono::high_resolution_clock::now();
                 NBARecords *queriedData = bPlusTree.searchRangedRecord(startKey, endKey);
 
                 auto end = chrono::high_resolution_clock::now();
                 chrono::duration<double> time_taken = end - start;
-                cout << "Search Time: " << time_taken.count() << endl;
-
+                float FG3_total = 0;
+                float FG3_average = 0;
                 if (queriedData == nullptr) {
                     cout << "Can't find record" << endl;
                 }
                 else {
-                    float FG3_total = 0;
                     cout << "GAME_DATE_EST  TEAM_ID_home    PTS_home    FG_PCT_home     FT_PCT_home     FG3_PCT_home    AST_home    REB_home	    HOME_TEAM_WINS" << endl;
                     for (int i = 0; i < queriedData->records.size(); i++) {
                         NBARecord *record = queriedData->records[i];
@@ -239,8 +255,23 @@ int main() {
                         cout << record->homeTeamWins << endl;
                         FG3_total += record->homeFG3Percentage;
                     }
-                    cout << "Average of FG3_PCT_home: " << FG3_total/queriedData->records.size() << endl;
+                    FG3_average = FG3_total/queriedData->records.size();
                 }
+                int numOfRecords = 0;
+                start = chrono::high_resolution_clock::now();
+                for (auto &recordPtr: unsortedRecordPtrs) {
+                    numOfRecords++;
+                }
+                end = chrono::high_resolution_clock::now();
+                chrono::duration<double> time_taken_linear_scan = end - start;
+                cout << "The average of “FG3_PCT_home” of the records that are returned: " << FG3_average << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time of the retrieval process: " << time_taken.count() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumberOfAllocatedBlocks() << endl;
+                cout << "=======================================================================================" << endl;
+                cout << "The running time (Linear Scan): " << time_taken_linear_scan.count() << endl;
+                cout << endl;
                 break;
             }
             case 7: {
