@@ -30,6 +30,12 @@ class BPlusTree {
 private:
     BPNode *root;
     BPNode* insertSplitRecord(float recordKey, NBARecord* recordAddress, BPNode* curNode);
+    static void handleUnderflow(
+            int currentIdx,
+            BPNode *current,
+            vector<BPNode *> &path,
+            int minleafSize
+            );
 
 public:
     BPlusTree(); //for empty tree
@@ -40,7 +46,7 @@ public:
     void insertRecord(float recordKey, void* recordAddress);
     void deleteRecord(float key);
     NBARecords* searchRecord(float key);
-    void displayTree(BPNode *current);
+    static void displayTree(BPNode *current);
     BPNode* getRoot();
     void calculateStatistics(BPNode *current);
     void displayRootNode();
