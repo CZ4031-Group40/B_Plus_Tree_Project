@@ -337,32 +337,86 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
     return;
 }
 
-NBARecords *BPlusTree::searchRecord(float key) {
+tuple<NBARecords *,int> BPlusTree::searchRangedRecord(float startKey, float endKey) {
+    tuple<BPNode *, int> searchNodeReturned = searchNode(startKey);
+    BPNode *firstNode = get<0>(searchNodeReturned);
+    int no_of_node_accessed = get<1>(searchNodeReturned);
+    auto *recordVectorPtr = new NBARecords();
+    int i = 0;
+    while (i < firstNode->keys.size()) {
+        if (startKey == firstNode->keys[i]) {
+            recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                      firstNode->recordPtrs[i]->records.begin(),
+                                      firstNode->recordPtrs[i]->records.end());
+            i++;
+            break;
+        }
+        if (startKey < firstNode->keys[i]) {
+            recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                            firstNode->recordPtrs[i]->records.begin(),
+                                            firstNode->recordPtrs[i]->records.end());
+            i++;
+            break;
+        }
+        i++;
+    }
+
+    if (i == firstNode->recordPtrs.size()) {
+        firstNode = firstNode->nextLeaf;
+        no_of_node_accessed++;
+        i = 0;
+    }
+
+    while (firstNode != nullptr && firstNode->keys[i] <= endKey) {
+        recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                  firstNode->recordPtrs[i]->records.begin(),
+                                  firstNode->recordPtrs[i]->records.end());
+        i++;
+        if (i == firstNode->keys.size()) {
+            firstNode = firstNode->nextLeaf;
+            no_of_node_accessed++;
+            i = 0;
+        }
+    }
+
+    return tuple<NBARecords *,int>{recordVectorPtr, no_of_node_accessed+1};
+}
+
+// Helper function
+tuple<BPNode *, int> BPlusTree::searchNode(float key) {
+    int no_of_node_accessed = 0;
     if (root == nullptr) {
-        return nullptr;
+        return tuple<BPNode*, int>{nullptr,0};
     }
     BPNode *current = root;
     while (!current->isLeaf) {
+        no_of_node_accessed++;
         for (int i = 0; i < current->keys.size(); i++) {
             if (key < current->keys[i]) {
                 current = current->childNodePtrs[i];
                 break;
             }
 
-            if (i == current->keys.size()-1) {
-                current = current->childNodePtrs[i+1];
+            if (i == current->keys.size() - 1) {
+                current = current->childNodePtrs[i + 1];
                 break;
             }
         }
     }
+    return tuple<BPNode *, int>{current,no_of_node_accessed};
+}
 
-    for (int i = 0; i < current->keys.size(); i++) {
-        if (key == current->keys[i]) {
-            return current->recordPtrs[i];
+tuple<NBARecords *,int> BPlusTree::searchRecord(float key) {
+    tuple<BPNode *, int> searchNodeReturned = searchNode(key);
+    BPNode *foundNode = get<0>(searchNodeReturned);
+    int no_of_node_accessed = get<1>(searchNodeReturned);
+    for (int i = 0; i < foundNode->keys.size(); i++) {
+        if (key == foundNode->keys[i]) {
+            return tuple<NBARecords *,int>{foundNode->recordPtrs[i], no_of_node_accessed+1};
         }
     }
 
-    return nullptr;
+    return tuple<NBARecords *, int>{nullptr, no_of_node_accessed+1};
 }
 
 void BPlusTree::displayTree(BPNode *current) {
