@@ -50,12 +50,21 @@
 
 ## Experiments
 
-### Experiment 1 and 2
-
-The script related to experiment 1 and 2 is located in `/src/experiment.cpp`.
+The script related to experiment is located in `/src/experiment.cpp`.
 
 - This script creates a record for each row from `/data/games.txt` and drops the rows with missing value
 - It prints out the relevant statistics regarding data insertion.
 - It prints out the relevant statistics and parameters of the B+ tree.
-
+- 
+###Windows
+To run this script follow step 1 to 3 on top replace step 4 with
+```
+.\Debug\B_Plus_Tree_Project.exe
+```
+   
+###Mac
 To run this script, run `./experiment` in the `/build` folder. Ensure you have done the setup above before running the script.
+
+
+If the script is not running whitin expectation please email
+twijaya001@e.ntu.edu.sg
