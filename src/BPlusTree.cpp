@@ -484,7 +484,7 @@ void BPlusTree::getNodeSize() {
     cout << "Node Size parameter, n: " << root->size << endl;
 }
 
-void BPlusTree::calculateStatistics(BPNode *current) {
+void BPlusTree::calculateStatistics(BPNode *current, int insert) {
     if (current == nullptr) {
         cout << "The tree is empty." << endl;
         return;
@@ -532,8 +532,10 @@ void BPlusTree::calculateStatistics(BPNode *current) {
     if (level > 0) {
         cout << "Total Levels: " << level << endl;
         cout << "Total Nodes: " << totalNodes << endl;
-        cout << "Average Node Size in Bytes: " << (totalSize / totalNodes) << " bytes" << endl;
-        cout << "Largest Node Size in Bytes: " << largestNodeSize << " bytes" << endl;
+        if(insert == 1) {
+            cout << "Average Node Size in Bytes: " << (totalSize / totalNodes) << " bytes" << endl;
+            cout << "Largest Node Size in Bytes: " << largestNodeSize << " bytes" << endl;
+        }
     }
 }
 

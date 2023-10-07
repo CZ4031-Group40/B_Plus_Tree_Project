@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const unsigned int BPlusNodeSize = 3;
+const unsigned int BPlusNodeSize = 25;
 class BPNode{
     friend class BPlusTree;
 
@@ -42,7 +42,7 @@ public:
     tuple<NBARecords *,int> searchRecord(float key);
     void displayTree(BPNode *current);
     BPNode* getRoot();
-    void calculateStatistics(BPNode *current);
+    void calculateStatistics(BPNode *current, int insert);
     void displayRootNode();
     void getNodeSize();
 

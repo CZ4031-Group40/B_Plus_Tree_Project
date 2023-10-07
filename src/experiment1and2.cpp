@@ -90,7 +90,7 @@ int main() {
     }
     BPNode *ptr=bPlusTree.getRoot();
     bPlusTree.getNodeSize();
-    bPlusTree.calculateStatistics(ptr);
+    bPlusTree.calculateStatistics(ptr,1);
     // bPlusTree.displayTree(ptr);
 
     bPlusTree.displayRootNode();
@@ -222,6 +222,7 @@ int main() {
 
 
     cout << "========================================EXPERIMENT FIVE========================================" << endl;
+    BPlusTree bPlusTreeLS = bPlusTree;
 
     auto startDelete = chrono::high_resolution_clock::now();
 
@@ -229,7 +230,6 @@ int main() {
     result = bPlusTree.searchRangedRecord(0,0.35);
     NBARecords *resultData = get<0>(result);
 
-    cout << "no. of records to be deleted" << resultData ->records.size() << endl;
 
     int deleteCount = 0;
 
@@ -244,29 +244,26 @@ int main() {
     }
     for (float distinctPercentage : distinctHomeFGPercentages) {
         bPlusTree.deleteRecord(distinctPercentage);
-        cout << distinctPercentage << " DELETED" << endl;
+
         deleteCount++;
     }
-    cout<< "no. of records deleted" << deleteCount << endl;
+
     auto endDelete = chrono::high_resolution_clock::now();
     chrono::duration<double> time_taken_delete = endDelete - startDelete;
 
     BPNode* newRoot = bPlusTree.getRoot();
+    bPlusTree.displayTree(newRoot);
+    bPlusTree.calculateStatistics(newRoot,0);
+    bPlusTree.displayRootNode();
 
-//    bPlusTree.calculateStatistics(newRoot);
-//    bPlusTree.displayRootNode();
-//
-    cout << "The running time of the deletion process: " << time_taken_delete.count()*1000 << endl;
-//
-//
-    int numOfRecordsDelete = 0;
+
     auto startLinearScan = chrono::high_resolution_clock::now();
     void* storagePtrDelete = storage.getStoragePtr();
     unsigned int numOfBlocks = storage.getNumOfAllocatedBlocks();
     unsigned int recordPerBlock = storage.getRecordsPerBlock();
     float lowerBound = 0.0;
     float upperBound = 0.35;
-//
+
     for(unsigned int i = 0; i < numOfBlocks; i++) {
         NBARecord* recordPtr = (NBARecord*)(storagePtrDelete) + (i * recordPerBlock);
         unsigned int blockNumOfRecords = recordPerBlock;
@@ -278,18 +275,19 @@ int main() {
         for(unsigned int j = 0; j < blockNumOfRecords; j++) {
             float fgPercentage = recordPtr->homeFGPercentage;
             if (fgPercentage >= lowerBound && fgPercentage <= upperBound) {
-                bPlusTree.deleteRecord(fgPercentage);
+                bPlusTreeLS.deleteRecord(fgPercentage);
             }
             recordPtr++;
         }
     }
     auto endLinearScan = chrono::high_resolution_clock::now();
     chrono::duration<double> time_taken_linear_scan_del = endLinearScan - startLinearScan;
-//
+    cout << "The running time of the deletion process: " << time_taken_delete.count()*1000 << endl;
+
+
     cout << "The number of data blocks that would be accessed by a brute-force linear scan method: " << storage.getNumOfAllocatedBlocks() << endl;
-    cout << "=======================================================================================" << endl;
     cout << "The running time (Linear Scan): " << time_taken_linear_scan_del.count()*1000 << endl;
-//    cout << endl;
+
 
 
 return 0;
