@@ -56,13 +56,13 @@ The script related to experiment is located in `/src/experiment.cpp`.
 - It prints out the relevant statistics regarding data insertion.
 - It prints out the relevant statistics and parameters of the B+ tree.
 - 
-###Windows
+### Windows
 To run this script follow step 1 to 3 on top replace step 4 with
 ```
 .\Debug\B_Plus_Tree_Project.exe
 ```
    
-###Mac
+### Mac
 To run this script, run `./experiment` in the `/build` folder. Ensure you have done the setup above before running the script.
 
 
