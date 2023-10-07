@@ -219,7 +219,7 @@ int main() {
     time_taken_linear_scan = end - start;
     cout << "Number of index node accessed: " << no_of_node_accessed << endl;
     cout << "=======================================================================================" << endl;
-    cout << "Number of data blocks accessed: " << no_of_blocks_accessed << endl;
+    cout << "Number of data blocks accessed (indluding B+Tree index node block): " << no_of_blocks_accessed << endl;
     cout << "=======================================================================================" << endl;
     cout << "The average of \"FG3_PCT_home\" of the records that are returned: " << FG3_average << endl;
     cout << "=======================================================================================" << endl;
