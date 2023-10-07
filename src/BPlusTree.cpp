@@ -684,7 +684,7 @@ void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftC
         leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
 
         // Update the parent's keys and child pointers
-        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex-1);
         parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
         if(curNode->isLeaf){
             leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
