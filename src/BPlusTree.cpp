@@ -551,7 +551,7 @@ void BPlusTree::deleteRecord(float keyToDelete) {
     bool rootUnderflow = deleteRecordRecursively(root, keyToDelete);
 
     // If root becomes empty after deletion, update the tree structure
-    if (root->keys.empty() || (root->keys[0]==root->childNodePtrs[0]->keys[0])) {
+    if (root->keys.empty()) {
         BPNode* newRoot = root->childNodePtrs[0];
         delete root;
         root = newRoot;
