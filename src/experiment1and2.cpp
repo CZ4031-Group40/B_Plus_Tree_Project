@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -123,7 +124,7 @@ int main() {
     }
     int recordsPerBlock = storage.getRecordsPerBlock();
     int numberOfRecordsRetrieved = queriedData->records.size();
-    int no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(numberOfRecordsRetrieved/recordsPerBlock);
+    int no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(ceil(numberOfRecordsRetrieved/recordsPerBlock));
 
     start = chrono::high_resolution_clock::now();
     auto *queriedData2 = new NBARecords();
@@ -186,7 +187,8 @@ int main() {
     }
     recordsPerBlock = storage.getRecordsPerBlock();
     numberOfRecordsRetrieved = queriedData->records.size();
-    no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(numberOfRecordsRetrieved/recordsPerBlock);
+    no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(ceil(numberOfRecordsRetrieved/recordsPerBlock));
+
     start = chrono::high_resolution_clock::now();
     queriedData2 = new NBARecords();
     storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
