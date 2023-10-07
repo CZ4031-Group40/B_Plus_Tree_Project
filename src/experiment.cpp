@@ -231,7 +231,7 @@ int main() {
     cout << endl;
 
 
-    cout << "========================================EXPERIMENT FIVE========================================" << endl;
+    cout << "========================================EXPERIMENT 5========================================" << endl;
     BPlusTree bPlusTreeLS = bPlusTree;
 
     auto startDelete = chrono::high_resolution_clock::now();

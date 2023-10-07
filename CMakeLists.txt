@@ -11,7 +11,7 @@ add_executable(B_Plus_Tree_Project src/main.cpp
         src/DataStruct.h)
 
 
-add_executable(exp1and2 src/experiment1and2.cpp
+add_executable(Experiment src/experiment.cpp
         src/Storage.h
         src/Storage.cpp
         src/BPlusTree.cpp
