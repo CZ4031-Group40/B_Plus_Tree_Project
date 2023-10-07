@@ -586,6 +586,7 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
             int leftChildIndex = (childIndex > 0) ? childIndex - 1 : -1;
             int rightChildIndex = (childIndex < currentNode->childNodePtrs.size() - 1) ? childIndex + 1 : -1;
             currentNode->minKey = currentNode->childNodePtrs[0]->minKey;
+            currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
 
             if(childNode->isLeaf){
                 if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->keys.size() - 1 >= (BPlusNodeSize + 1) / 2) {
