@@ -491,32 +491,32 @@ void BPlusTree::handleUnderflow(
         vector<BPNode *> &path,
         int minLeafSize
         ) {
-    cout << "treeHelpers: handleUnderflow: " << endl;
+//    cout << "treeHelpers: handleUnderflow: " << endl;
 
     BPNode* parent = path[path.size() - 2];
 
-    cout << "treeHelpers: handleUnderflow: " << parent->childNodePtrs[currentIdx] << endl;
+//    cout << "treeHelpers: handleUnderflow: " << parent->childNodePtrs[currentIdx] << endl;
 
-    cout << "++++ DEBUG ++++" << endl;
-    cout << "currentIdx: " << currentIdx << endl;
+//    cout << "++++ DEBUG ++++" << endl;
+//    cout << "currentIdx: " << currentIdx << endl;
 
     // print current keys
-    cout << "current keys: ";
-    for (float key: current->keys) {
-        cout << key << " ";
-    }
-    cout << endl;
+//    cout << "current keys: ";
+//    for (float key: current->keys) {
+//        cout << key << " ";
+//    }
+//    cout << endl;
 
-    cout << "current minKey: " << current->minKey << endl;
+//    cout << "current minKey: " << current->minKey << endl;
 
     // print parent keys
-    cout << "parent keys: ";
-    for (float pKey: parent->keys) {
-        cout << pKey << " ";
-    }
-    cout << endl;
+//    cout << "parent keys: ";
+//    for (float pKey: parent->keys) {
+//        cout << pKey << " ";
+//    }
+//    cout << endl;
 
-    cout << "++++ DEBUG ++++" << endl;
+//    cout << "++++ DEBUG ++++" << endl;
 
     // 2a. Adopt data from a neighbour, update the parent
 
@@ -535,16 +535,16 @@ void BPlusTree::handleUnderflow(
 
     // START DEBUG
 
-    cout << "++++ DEBUG ++++" << endl;
+//    cout << "++++ DEBUG ++++" << endl;
 //    cout << "minLeafSize: " << minLeafSize << endl;
 //    cout << "left neighbour: " << leftNeighbour << endl;
 //    cout << "left neighbour keys size: " << leftNeighbour->keys.size() << endl;
 //    cout << "right neighbour: " << rightNeighbour << endl;
 //    cout << "right neighbour keys size: " << rightNeighbour->keys.size() << endl;
 
-    displayTree(path[0]);
+//    displayTree(path[0]);
 
-    cout << "++++ DEBUG ++++" << endl;
+//    cout << "++++ DEBUG ++++" << endl;
 
 
     // END DEBUG
@@ -562,7 +562,7 @@ void BPlusTree::handleUnderflow(
         // end debug
 
 
-        cout << "DEBUG: adopt from left neighbour" << endl;
+//        cout << "DEBUG: adopt from left neighbour" << endl;
         // adopt the last element from the left neighbour
         current->keys.insert(current->keys.begin(), leftNeighbour->keys[leftNeighbour->keys.size() - 1]);
         if (current->isLeaf) {
@@ -603,7 +603,7 @@ void BPlusTree::handleUnderflow(
     else if (rightNeighbour != nullptr && rightNeighbour->keys.size() > minLeafSize) {
 
 
-        cout << "DEBUG: adopt from right neighbour" << endl;
+//        cout << "DEBUG: adopt from right neighbour" << endl;
         // adopt the first element from the right neighbour
 
         current->keys.push_back(rightNeighbour->keys[0]);
@@ -642,10 +642,10 @@ void BPlusTree::handleUnderflow(
 
         // if adoption won't work, merge with neighbour - may result in parent underflow
     else {
-        cout << "DEBUG: merge with neighbour" << endl;
+//        cout << "DEBUG: merge with neighbour" << endl;
         // merge with the left neighbour
         if (leftNeighbour != nullptr) {
-            cout << "DEBUG: merge with left neighbour" << endl;
+//            cout << "DEBUG: merge with left neighbour" << endl;
             // move all elements from the current node to the left neighbour
             if (current->isLeaf) {
                 leftNeighbour->recordPtrs.insert(leftNeighbour->recordPtrs.end(), current->recordPtrs.begin(),
@@ -661,11 +661,11 @@ void BPlusTree::handleUnderflow(
 
 
             if (path.size() > 1) {
-                cout << "DEBUG: parent underflow?" << endl;
+//                cout << "DEBUG: parent underflow?" << endl;
 
                 // check for parent underflow
                 if (parent->keys.size() < minLeafSize) {
-                    cout << "DEBUG: recursively handle overflow - call handleUnderflow" << endl;
+//                    cout << "DEBUG: recursively handle overflow - call handleUnderflow" << endl;
                     // handle parent underflow
 
                     // recursive
@@ -688,7 +688,7 @@ void BPlusTree::handleUnderflow(
                     int newMinLeafSize = newPath.size() < 2 ? 1 : minLeafSize;
                     handleUnderflow(newCurrentIdx, newCurrent, newPath, newMinLeafSize);
                 } else {
-                    cout << "DEBUG: no parent underflow -- gg to delete parent->keys[" << currentIdx << "]" << endl;
+//                    cout << "DEBUG: no parent underflow -- gg to delete parent->keys[" << currentIdx << "]" << endl;
 
                     // update the parent
                 parent->keys.erase(parent->keys.begin() + currentIdx - 1);
@@ -696,7 +696,7 @@ void BPlusTree::handleUnderflow(
                 parent->minKey = parent->childNodePtrs[0]->minKey;
                 }
             } else {
-                cout << "DEBUG: cannot recursively handle overflow at root" << endl;
+//                cout << "DEBUG: cannot recursively handle overflow at root" << endl;
             }
 
             // update the nextLeaf pointer
@@ -766,7 +766,7 @@ void BPlusTree::handleUnderflow(
             // delete the right neighbour
             delete rightNeighbour;
         } else {
-            cout << "ERROR: Failed to handle underflow, no neighbours found" << endl;
+//            cout << "ERROR: Failed to handle underflow, no neighbours found" << endl;
         }
     }
 }
@@ -797,7 +797,7 @@ void BPlusTree::deleteRecord(float key){
     }
 
     float replacementKey = current->keys[0];
-    cout << path.size() << endl;
+//    cout << path.size() << endl;
 
     bool found = false;
 
