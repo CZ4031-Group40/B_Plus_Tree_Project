@@ -4,6 +4,7 @@
 #include <queue>
 #include "BPlusTree.h"
 #include "Storage.h"
+#include <set>
 
 using namespace std;
 
@@ -548,7 +549,7 @@ void BPlusTree::deleteRecord(float keyToDelete) {
     bool rootUnderflow = deleteRecordRecursively(root, keyToDelete);
 
     // If root becomes empty after deletion, update the tree structure
-    if (root->keys.empty()) {
+    if (root->keys.empty() || (root->keys[0]==root->childNodePtrs[0]->keys[0])) {
         BPNode* newRoot = root->childNodePtrs[0];
         delete root;
         root = newRoot;
@@ -716,9 +717,32 @@ void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftC
     delete curNode;
 }
 
+
+set<float> BPlusTree::searchRangedKeys(float startKey, float endKey) {
+    set<float> uniqueKeys;
+
+    tuple<BPNode*, int> searchNodeReturned = searchNode(startKey);
+    BPNode* firstNode = get<0>(searchNodeReturned);
+
+    int i = 0;
+    while (firstNode != nullptr && firstNode->keys[i] <= endKey) {
+        if (firstNode->keys[i] >= startKey) {
+            uniqueKeys.insert(firstNode->keys[i]);
+        }
+        i++;
+
+        if (i == firstNode->keys.size()) {
+            firstNode = firstNode->nextLeaf;
+            i = 0;
+        }
+    }
+
+    return uniqueKeys;
+}
+
+
 BPNode *BPlusTree::getRoot() {
     return this->root;
 }
 
 BPlusTree::~BPlusTree() = default;
-
