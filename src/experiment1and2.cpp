@@ -129,7 +129,7 @@ int main() {
     start = chrono::high_resolution_clock::now();
     auto *queriedData2 = new NBARecords();
     auto *storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
-    void *curBlockPtr = storagePtr;
+    void *curBlockPtr;
     void *curRecordPtr;
     unsigned int numOfAllocatedBlocks = storage.getNumOfAllocatedBlocks();
     for (int i = 0; i < numOfAllocatedBlocks; i++) {
@@ -192,9 +192,7 @@ int main() {
     start = chrono::high_resolution_clock::now();
     queriedData2 = new NBARecords();
     storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
-    curBlockPtr = storagePtr;
     recordSize = sizeof(NBARecord);
-    curRecordPtr;
     numOfAllocatedBlocks = storage.getNumOfAllocatedBlocks();
     for (int i = 0; i < numOfAllocatedBlocks; i++) {
         curBlockPtr = storagePtr + (i * blockSize);
