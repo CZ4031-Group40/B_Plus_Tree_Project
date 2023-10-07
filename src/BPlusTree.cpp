@@ -4,6 +4,7 @@
 #include <queue>
 #include "BPlusTree.h"
 #include "Storage.h"
+#include <set>
 
 using namespace std;
 
@@ -484,7 +485,7 @@ void BPlusTree::getNodeSize() {
     cout << "Node Size parameter, n: " << root->size << endl;
 }
 
-void BPlusTree::calculateStatistics(BPNode *current) {
+void BPlusTree::calculateStatistics(BPNode *current, int insert) {
     if (current == nullptr) {
         cout << "The tree is empty." << endl;
         return;
@@ -532,8 +533,10 @@ void BPlusTree::calculateStatistics(BPNode *current) {
     if (level > 0) {
         cout << "Total Levels: " << level << endl;
         cout << "Total Nodes: " << totalNodes << endl;
-        cout << "Average Node Size in Bytes: " << (totalSize / totalNodes) << " bytes" << endl;
-        cout << "Largest Node Size in Bytes: " << largestNodeSize << " bytes" << endl;
+        if(insert == 1) {
+            cout << "Average Node Size in Bytes: " << (totalSize / totalNodes) << " bytes" << endl;
+            cout << "Largest Node Size in Bytes: " << largestNodeSize << " bytes" << endl;
+        }
     }
 }
 
@@ -734,9 +737,32 @@ void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftC
     delete curNode;
 }
 
+
+set<float> BPlusTree::searchRangedKeys(float startKey, float endKey) {
+    set<float> uniqueKeys;
+
+    tuple<BPNode*, int> searchNodeReturned = searchNode(startKey);
+    BPNode* firstNode = get<0>(searchNodeReturned);
+
+    int i = 0;
+    while (firstNode != nullptr && firstNode->keys[i] <= endKey) {
+        if (firstNode->keys[i] >= startKey) {
+            uniqueKeys.insert(firstNode->keys[i]);
+        }
+        i++;
+
+        if (i == firstNode->keys.size()) {
+            firstNode = firstNode->nextLeaf;
+            i = 0;
+        }
+    }
+
+    return uniqueKeys;
+}
+
+
 BPNode *BPlusTree::getRoot() {
     return this->root;
 }
 
 BPlusTree::~BPlusTree() = default;
-
