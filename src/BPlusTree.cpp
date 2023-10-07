@@ -562,7 +562,7 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
         if (indexToDelete != -1) {
             currentNode->keys.erase(currentNode->keys.begin() + indexToDelete);
             currentNode->recordPtrs.erase(currentNode->recordPtrs.begin() + indexToDelete);
-            currentNode->minKey = currentNode->keys[0];
+            currentNode->minKey =  !currentNode->keys.empty() ? currentNode->keys[0] : currentNode->minKey;
             // Check if the node becomes underflowed
             if (currentNode->keys.size() < (BPlusNodeSize + 1) / 2 && currentNode != root) {
                 return true; // Node is underflowed, indicating that its parent needs adjustment
@@ -581,7 +581,7 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
         BPNode* childNode = currentNode->childNodePtrs[childIndex];
         bool childUnderflow = deleteRecordRecursively(childNode, keyToDelete);
         currentNode->minKey = currentNode->childNodePtrs[0]->minKey;
-        currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+        if(childIndex>0)currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
 
         if (childUnderflow) {
             // Handle underflow in the child node
@@ -596,15 +596,15 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
                 } else if (rightChildIndex != -1 && currentNode->childNodePtrs[rightChildIndex]->keys.size() - 1 >= (BPlusNodeSize + 1) / 2) {
                     // Redistribute with the right sibling
                     redistributeWithRightSibling(currentNode, childIndex, rightChildIndex);
-                    currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+                    if(childIndex>0) currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
                     currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
                 } else {
                     // Merge with a neighboring child node if redistribution is not possible
-                    mergeChildNodes(currentNode, leftChildIndex, childIndex);
+                    mergeChildNodes(currentNode, childIndex, leftChildIndex, rightChildIndex);
                 }
             }
             else{
-                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->keys.size() - 1 >= BPlusNodeSize / 2) {
+                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->childNodePtrs.size() - 1 >= BPlusNodeSize / 2) {
                     // Redistribute with the left sibling
                     redistributeWithLeftSibling(currentNode, leftChildIndex, childIndex);
                     currentNode->keys[childIndex - 1] = currentNode->childNodePtrs[childIndex]->minKey;
@@ -615,7 +615,7 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
                     currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
                 } else {
                     // Merge with a neighboring child node if redistribution is not possible
-                    mergeChildNodes(currentNode, leftChildIndex, childIndex);
+                    mergeChildNodes(currentNode, childIndex, leftChildIndex, rightChildIndex);
                 }
             }
 
@@ -651,6 +651,7 @@ void BPlusTree::redistributeWithLeftSibling(BPNode* parentNode, int leftChildInd
         leftNode->childNodePtrs.erase(leftNode->childNodePtrs.end()-1);
     }
 }
+
 void BPlusTree::redistributeWithRightSibling(BPNode* parentNode, int leftChildIndex, int rightChildIndex) {
     BPNode* leftNode = parentNode->childNodePtrs[leftChildIndex];
     BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
@@ -672,77 +673,87 @@ void BPlusTree::redistributeWithRightSibling(BPNode* parentNode, int leftChildIn
         rightNode->childNodePtrs.erase(rightNode->childNodePtrs.begin());
     }
 }
-void BPlusTree::mergeChildNodes(BPNode* parentNode, int leftChildIndex, int rightChildIndex) {
-    BPNode* leftNode = parentNode->childNodePtrs[leftChildIndex];
-    BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
 
-    // Move all keys and record pointers from the right node to the left node
-    leftNode->keys.insert(leftNode->keys.end(), rightNode->keys.begin(), rightNode->keys.end());
-    leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), rightNode->recordPtrs.begin(), rightNode->recordPtrs.end());
+void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftChildIndex, int rightChildIndex) {
+    BPNode* leftNode = leftChildIndex != -1 ? parentNode->childNodePtrs[leftChildIndex] : nullptr;
+    BPNode* rightNode = rightChildIndex != -1 ? parentNode->childNodePtrs[rightChildIndex] : nullptr;
+    BPNode* curNode = parentNode->childNodePtrs[curChildIndex];
 
-    // Update the parent's keys and child pointers
-    parentNode->keys.erase(parentNode->keys.begin() + leftChildIndex);
-    parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + rightChildIndex);
+    if(leftNode != nullptr){
+        // Move all keys and record pointers from the current node to the left node
+        leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
 
-    // Check if the parent node becomes underflowed
-    if (parentNode->keys.size() < (BPlusNodeSize + 1) / 2 && parentNode != root) {
-        // Recursively handle parent node underflow
-        BPNode* grandParent = findParentNode(root, parentNode, nullptr);
-        int indexInGrandParent = findIndexInParent(grandParent, parentNode);
-
-        // Merge parent node with its neighbor or redistribute keys
-        handleNonLeafNodeUnderflow(grandParent, indexInGrandParent, parentNode);
-    }
-
-    // Delete the right node
-    delete rightNode;
-}
-
-void BPlusTree::handleNonLeafNodeUnderflow(BPNode* grandParentNode, int indexInGrandParent, BPNode* underflowNode) {
-    if (indexInGrandParent == -1) {
-        // The underflow node is the leftmost child of the grandparent
-        BPNode* rightSibling = grandParentNode->childNodePtrs[1];
-
-        // Check if redistribution with the right sibling is possible
-        if (rightSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
-            // Redistribute keys from the right sibling
-            redistributeWithRightSibling(grandParentNode, 0, 1);
-        } else {
-            // Merge the underflow node with the right sibling
-            mergeChildNodes(grandParentNode, 0, 1);
-        }
-    } else if (indexInGrandParent == grandParentNode->keys.size()) {
-        // The underflow node is the rightmost child of the grandparent
-        BPNode* leftSibling = grandParentNode->childNodePtrs[indexInGrandParent - 1];
-
-        // Check if redistribution with the left sibling is possible
-        if (leftSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
-            // Redistribute keys from the left sibling
-            redistributeWithLeftSibling(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
-        } else {
-            // Merge the underflow node with the left sibling
-            mergeChildNodes(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
+        // Update the parent's keys and child pointers
+        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
+        if(curNode->isLeaf){
+            leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
+            leftNode->nextLeaf = curNode->nextLeaf;
+        }else{
+            leftNode->childNodePtrs.insert(leftNode->childNodePtrs.end(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
         }
     } else {
-        // The underflow node has both left and right siblings
-        BPNode* leftSibling = grandParentNode->childNodePtrs[indexInGrandParent - 1];
-        BPNode* rightSibling = grandParentNode->childNodePtrs[indexInGrandParent + 1];
+        // Move all keys and record pointers from the current node to the right node
+        rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
 
-        // Check if redistribution with the left sibling is possible
-        if (leftSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
-            // Redistribute keys from the left sibling
-            redistributeWithLeftSibling(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
-        }
-            // Check if redistribution with the right sibling is possible
-        else if (rightSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
-            // Redistribute keys from the right sibling
-            redistributeWithRightSibling(grandParentNode, indexInGrandParent, indexInGrandParent + 1);
-        } else {
-            // Merge the underflow node with the right sibling
-            mergeChildNodes(grandParentNode, indexInGrandParent, indexInGrandParent + 1);
+        // Update the parent's keys and child pointers
+        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
+        if(curNode->isLeaf){
+            rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
+        }else{
+            rightNode->childNodePtrs.insert(rightNode->childNodePtrs.begin(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
         }
     }
+
+    delete curNode;
 }
+
+//void BPlusTree::handleNonLeafNodeUnderflow(BPNode* grandParentNode, int indexInGrandParent, BPNode* underflowNode) {
+//    if (indexInGrandParent == -1) {
+//        // The underflow node is the leftmost child of the grandparent
+//        BPNode* rightSibling = grandParentNode->childNodePtrs[1];
+//
+//        // Check if redistribution with the right sibling is possible
+//        if (rightSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
+//            // Redistribute keys from the right sibling
+//            redistributeWithRightSibling(grandParentNode, 0, 1);
+//        } else {
+//            // Merge the underflow node with the right sibling
+//            mergeChildNodes(grandParentNode, 0, 1);
+//        }
+//    } else if (indexInGrandParent == grandParentNode->keys.size()) {
+//        // The underflow node is the rightmost child of the grandparent
+//        BPNode* leftSibling = grandParentNode->childNodePtrs[indexInGrandParent - 1];
+//
+//        // Check if redistribution with the left sibling is possible
+//        if (leftSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
+//            // Redistribute keys from the left sibling
+//            redistributeWithLeftSibling(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
+//        } else {
+//            // Merge the underflow node with the left sibling
+//            mergeChildNodes(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
+//        }
+//    } else {
+//        // The underflow node has both left and right siblings
+//        BPNode* leftSibling = grandParentNode->childNodePtrs[indexInGrandParent - 1];
+//        BPNode* rightSibling = grandParentNode->childNodePtrs[indexInGrandParent + 1];
+//
+//        // Check if redistribution with the left sibling is possible
+//        if (leftSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
+//            // Redistribute keys from the left sibling
+//            redistributeWithLeftSibling(grandParentNode, indexInGrandParent - 1, indexInGrandParent);
+//        }
+//            // Check if redistribution with the right sibling is possible
+//        else if (rightSibling->keys.size() > (BPlusNodeSize + 1) / 2) {
+//            // Redistribute keys from the right sibling
+//            redistributeWithRightSibling(grandParentNode, indexInGrandParent, indexInGrandParent + 1);
+//        } else {
+//            // Merge the underflow node with the right sibling
+//            mergeChildNodes(grandParentNode, indexInGrandParent, indexInGrandParent + 1);
+//        }
+//    }
+//}
 
 BPNode* BPlusTree::findParentNode(BPNode* currentNode, BPNode* targetNode, BPNode* parentNode) {
     // Base case: If the current node is the root or a leaf node, return the parent node

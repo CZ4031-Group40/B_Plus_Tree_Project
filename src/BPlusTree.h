@@ -7,7 +7,6 @@
 using namespace std;
 
 const unsigned int BPlusNodeSize = 3;
-
 class BPNode{
     friend class BPlusTree;
 
@@ -55,7 +54,7 @@ public:
 
     void redistributeWithRightSibling(BPNode *parentNode, int leftChildIndex, int rightChildIndex);
 
-    void mergeChildNodes(BPNode *parentNode, int leftChildIndex, int rightChildIndex);
+    void mergeChildNodes(BPNode *parentNode, int curChildIndex, int leftChildIndex, int rightChildIndex);
 
     void handleNonLeafNodeUnderflow(BPNode *grandParentNode, int indexInGrandParent, BPNode *underflowNode);
 
