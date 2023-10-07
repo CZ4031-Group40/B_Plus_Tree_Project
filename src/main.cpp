@@ -31,7 +31,9 @@ int main() {
         cout << "5. Search key" << endl;
         cout << "6. Search key range" << endl;
         cout << "7. init new tree" << endl;
-        cout << "8. Exit" << endl;
+        cout << "8. delete" << endl;
+        cout << "9. Exit" << endl;
+
 
         int choice;
         cin >> choice;
@@ -74,7 +76,7 @@ int main() {
             }
 
             case 2: {
-                ifstream allData("../data/games.txt");
+                ifstream allData("../data/test_duplicate.txt");
 
                 if (!allData) {
                     cerr << "Failed to open the file." << endl;
@@ -243,8 +245,15 @@ int main() {
                     cerr << "Empty tree is initialised." << endl;
                     break;
             }
+            case 8: {
+                float keyToDelete;
+                cout << "Enter the key to delete: ";
+                cin >> keyToDelete;
 
-            case 8:
+                bPlusTree.deleteRecord(keyToDelete);
+                break;
+            }
+            case 9:
                 return 0;
 
             default:

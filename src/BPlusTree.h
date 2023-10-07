@@ -6,8 +6,7 @@
 
 using namespace std;
 
-const unsigned int BPlusNodeSize = 25;
-
+const unsigned int BPlusNodeSize = 3;
 class BPNode{
     friend class BPlusTree;
 
@@ -38,7 +37,6 @@ public:
     ~BPlusTree();
 
     void insertRecord(float recordKey, void* recordAddress);
-    void deleteRecord();
     tuple<NBARecords *,int> searchRangedRecord(float startKey, float endKey);
     tuple<BPNode *, int> searchNode(float key);
     tuple<NBARecords *,int> searchRecord(float key);
@@ -48,6 +46,15 @@ public:
     void displayRootNode();
     void getNodeSize();
 
+    void deleteRecord(float keyToDelete);
+
+    bool deleteRecordRecursively(BPNode *currentNode, float keyToDelete);
+
+    void redistributeWithLeftSibling(BPNode *parentNode, int leftChildIndex, int rightChildIndex);
+
+    void redistributeWithRightSibling(BPNode *parentNode, int leftChildIndex, int rightChildIndex);
+
+    void mergeChildNodes(BPNode *parentNode, int curChildIndex, int leftChildIndex, int rightChildIndex);
 };
 
 

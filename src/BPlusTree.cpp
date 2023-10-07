@@ -33,28 +33,28 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
         float recordKey = get<0>(i);
         auto recordAddress = static_cast<NBARecord *>(get<1>(i));
 
-        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){ 
+        if((bpNode->keys.size() < bpNode->size) || (bpNode->keys[bpNode->keys.size() - 1] * 1000 ==recordKey * 1000)){
             if(!bpNode->keys.empty() && bpNode->keys[bpNode->keys.size() - 1] == recordKey){
                 NBARecords *recordVectorPtr = (bpNode->recordPtrs[bpNode->recordPtrs.size()-1]);
-                recordVectorPtr->records.push_back(recordAddress); 
-            } else { 
+                recordVectorPtr->records.push_back(recordAddress);
+            } else {
                 auto *recordVector = new NBARecords();
 
-                bpNode->keys.push_back(recordKey); 
+                bpNode->keys.push_back(recordKey);
                 recordVector->records.push_back(recordAddress);
-                bpNode->recordPtrs.push_back(recordVector); 
+                bpNode->recordPtrs.push_back(recordVector);
             }
 
-        } else { 
+        } else {
             auto *recordVector = new NBARecords();
 
             auto newNode = new BPNode(true);
 
             bpNodes.push_back(bpNode);
-            bpNode = newNode; 
+            bpNode = newNode;
             bpNode->keys.push_back(recordKey);
             recordVector->records.push_back(recordAddress);
-            bpNode->recordPtrs.push_back(recordVector); 
+            bpNode->recordPtrs.push_back(recordVector);
         }
     }
 
@@ -134,13 +134,13 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
     }
 
     this->root = bpNodes[0];
-    
+
 }
 
 BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode* curNode) {
-    
+
     if (curNode->isLeaf) {
-        
+
         unsigned int insertIdx = 0;
         while (insertIdx < curNode->keys.size()) {
             if (key == curNode->keys[insertIdx]) {
@@ -160,7 +160,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
             auto *recordVector = new NBARecords();
             recordVector->records.push_back(recordAddress);
-            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);
 
         }
         // if current node exceeds capacity, create new leaf node and update parent by returning newNode
@@ -173,7 +173,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             recordVector->records.push_back(recordAddress);
 
             curNode->keys.insert(curNode->keys.begin()+insertIdx, key);
-            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);   
+            curNode->recordPtrs.insert(curNode->recordPtrs.begin() + insertIdx, recordVector);
 
             int splitIdx = curNode->keys.size() / 2;
 
@@ -201,7 +201,7 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
         childNode = curNode->childNodePtrs[insertIdx];
 
         while (insertIdx < curNode->keys.size()) {
-            
+
             if (key < curNode->keys[insertIdx]) {
                 break;
             }
@@ -220,13 +220,13 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
 
                 curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey);
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
-                
+
             }
             else {
                 //create new non-leaf node
                 BPNode *newNode = new BPNode(false);
 
-                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey); 
+                curNode->keys.insert(curNode->keys.begin()+insertIdx, tempNode->minKey);
                 curNode->childNodePtrs.insert(curNode->childNodePtrs.begin()+insertIdx+1, tempNode);
 
                 int splitIdx = curNode->keys.size() / 2;
@@ -244,14 +244,14 @@ BPNode *BPlusTree::insertSplitRecord(float key, NBARecord* recordAddress, BPNode
             }
         }
     }
-    return nullptr; 
+    return nullptr;
 }
 
 void BPlusTree::insertRecord(float key, void* recordPtr) {
-    
+
     auto recordAddress = static_cast<NBARecord *>(recordPtr);
 
-    BPNode *current = root;    
+    BPNode *current = root;
 
     if (current==nullptr) {
         // Create a new root node and add the record
@@ -263,15 +263,15 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
         recordVector->records.push_back(recordAddress);
 
         newRootNode->recordPtrs.push_back(recordVector);
-        
+
         this->root = newRootNode;
 
-        return;    
+        return;
     }
     if (current->isLeaf) {
         //insert straight to root
         BPNode *tempNode = insertSplitRecord(key, recordAddress, current);
-        
+
         // create a new root node with current and tempNode as the childnodes
         if (tempNode!=nullptr) {
             BPNode *newRootNode = new BPNode(false);
@@ -291,7 +291,7 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
         childNode = current->childNodePtrs[insertIdx];
 
         while (insertIdx < current->keys.size()) {
-            
+
             if (key<current->keys[insertIdx]) {
                 break;
             }
@@ -300,7 +300,7 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
         }
 
         BPNode *tempNode = insertSplitRecord(key, recordAddress, childNode);
-        
+
         if (tempNode!=nullptr) {
             if (current->keys.size() < current->size) {
                 current->keys.insert(current->keys.begin()+insertIdx, tempNode->minKey);
@@ -311,13 +311,13 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
 
                 current->keys.insert(current->keys.begin()+insertIdx, tempNode->minKey);
                 current->childNodePtrs.insert(current->childNodePtrs.begin()+insertIdx+1, tempNode);
-                
+
                 int splitIdx = (current->keys.size() / 2 );
 
                 // move keys from splitidx onwards from current to new node
                 newNode->keys.assign(current->keys.begin() + splitIdx+1, current->keys.end());
                 current->keys.erase(current->keys.begin() + splitIdx, current->keys.end());
-                
+
                 newNode->childNodePtrs.assign(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
                 current->childNodePtrs.erase(current->childNodePtrs.begin() + splitIdx+1, current->childNodePtrs.end());
 
@@ -332,7 +332,7 @@ void BPlusTree::insertRecord(float key, void* recordPtr) {
 
                 this->root = newRootNode;
             }
-        }    
+        }
     }
     return;
 }
@@ -538,9 +538,182 @@ void BPlusTree::calculateStatistics(BPNode *current) {
 }
 
 
+void BPlusTree::deleteRecord(float keyToDelete) {
+    if (root == nullptr) {
+        cout << "The tree is empty." << endl;
+        return;
+    }
 
-void BPlusTree::deleteRecord() {
+    // Start the recursive delete process
+    bool rootUnderflow = deleteRecordRecursively(root, keyToDelete);
 
+    // If root becomes empty after deletion, update the tree structure
+    if (root->keys.empty()) {
+        BPNode* newRoot = root->childNodePtrs[0];
+        delete root;
+        root = newRoot;
+    }
+}
+
+bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) {
+    if (currentNode->isLeaf) {
+        // Handle deletion in a leaf node
+        int indexToDelete = -1;
+        for (int i = 0; i < currentNode->keys.size(); i++) {
+            if (currentNode->keys[i] == keyToDelete) {
+                indexToDelete = i;
+                break;
+            }
+        }
+
+        if (indexToDelete != -1) {
+            currentNode->keys.erase(currentNode->keys.begin() + indexToDelete);
+            currentNode->recordPtrs.erase(currentNode->recordPtrs.begin() + indexToDelete);
+            currentNode->minKey =  !currentNode->keys.empty() ? currentNode->keys[0] : currentNode->minKey;
+            // Check if the node becomes underflowed
+            if (currentNode->keys.size() < (BPlusNodeSize + 1) / 2 && currentNode != root) {
+                return true; // Node is underflowed, indicating that its parent needs adjustment
+            }
+        }
+
+        return false; // Node is not underflowed
+    } else {
+        // Find the appropriate child node to traverse
+        int childIndex = 0;
+        while (childIndex < currentNode->keys.size() && keyToDelete >= currentNode->keys[childIndex]) {
+            childIndex++;
+        }
+
+        // Recursively delete the record in the child node
+        BPNode* childNode = currentNode->childNodePtrs[childIndex];
+        bool childUnderflow = deleteRecordRecursively(childNode, keyToDelete);
+        currentNode->minKey = currentNode->childNodePtrs[0]->minKey;
+        if(childIndex>0)currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+
+        if (childUnderflow) {
+            // Handle underflow in the child node
+            int leftChildIndex = (childIndex > 0) ? childIndex - 1 : -1;
+            int rightChildIndex = (childIndex < currentNode->childNodePtrs.size() - 1) ? childIndex + 1 : -1;
+
+            if(childNode->isLeaf){
+                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->keys.size() - 1 >= (BPlusNodeSize + 1) / 2) {
+                    // Redistribute with the left sibling
+                    redistributeWithLeftSibling(currentNode, leftChildIndex, childIndex);
+                    currentNode->keys[childIndex - 1] = currentNode->childNodePtrs[childIndex]->minKey;
+                } else if (rightChildIndex != -1 && currentNode->childNodePtrs[rightChildIndex]->keys.size() - 1 >= (BPlusNodeSize + 1) / 2) {
+                    // Redistribute with the right sibling
+                    redistributeWithRightSibling(currentNode, childIndex, rightChildIndex);
+                    if(childIndex>0) currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+                    currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
+                } else {
+                    // Merge with a neighboring child node if redistribution is not possible
+                    mergeChildNodes(currentNode, childIndex, leftChildIndex, rightChildIndex);
+                }
+            }
+            else{
+                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->childNodePtrs.size() - 1 >= BPlusNodeSize / 2) {
+                    // Redistribute with the left sibling
+                    redistributeWithLeftSibling(currentNode, leftChildIndex, childIndex);
+                    currentNode->keys[childIndex - 1] = currentNode->childNodePtrs[childIndex]->minKey;
+                } else if (rightChildIndex != -1 && currentNode->childNodePtrs[rightChildIndex]->keys.size() - 1 >= BPlusNodeSize  / 2) {
+                    // Redistribute with the right sibling
+                    redistributeWithRightSibling(currentNode, childIndex, rightChildIndex);
+                    currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+                    currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
+                } else {
+                    // Merge with a neighboring child node if redistribution is not possible
+                    mergeChildNodes(currentNode, childIndex, leftChildIndex, rightChildIndex);
+                }
+            }
+
+
+            // Check if the parent node becomes underflowed
+            if (currentNode->keys.size() < (BPlusNodeSize + 1) / 2 && currentNode != root) {
+                return true; // Node is underflowed, indicating that its parent needs adjustment
+            }
+        }
+
+        return false; // Node is not underflowed
+    }
+}
+void BPlusTree::redistributeWithLeftSibling(BPNode* parentNode, int leftChildIndex, int rightChildIndex) {
+    BPNode* leftNode = parentNode->childNodePtrs[leftChildIndex];
+    BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
+
+
+    float borrowedKey = leftNode->keys.back();
+    rightNode->keys.insert(rightNode->keys.begin(), borrowedKey);
+    leftNode->keys.erase(leftNode->keys.end()-1);
+    rightNode->minKey = rightNode->keys[0];
+
+    if (leftNode->isLeaf){
+        NBARecords* borrowedRecord = leftNode->recordPtrs.back();
+        rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), borrowedRecord);
+        leftNode->recordPtrs.erase(leftNode->recordPtrs.end()-1);
+
+    } else  {
+        // Move the corresponding child pointer if it's a non-leaf node
+        BPNode* borrowedChild = leftNode->childNodePtrs.back();
+        rightNode->childNodePtrs.insert(rightNode->childNodePtrs.begin(), borrowedChild);
+        leftNode->childNodePtrs.erase(leftNode->childNodePtrs.end()-1);
+    }
+}
+
+void BPlusTree::redistributeWithRightSibling(BPNode* parentNode, int leftChildIndex, int rightChildIndex) {
+    BPNode* leftNode = parentNode->childNodePtrs[leftChildIndex];
+    BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
+
+    // Move the leftmost key from the right sibling to the parent
+    float borrowedKey = rightNode->keys.front();
+    leftNode->keys.insert(leftNode->keys.end(), borrowedKey);
+    rightNode->keys.erase(rightNode->keys.begin());
+    rightNode->minKey = rightNode->keys[0];
+
+    if (rightNode->isLeaf){
+        NBARecords* borrowedRecord = rightNode->recordPtrs.front();
+        leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), borrowedRecord);
+        rightNode->recordPtrs.erase(rightNode->recordPtrs.begin());
+    } else  {
+        // Move the corresponding child pointer if it's a non-leaf node
+        BPNode* borrowedChild = rightNode->childNodePtrs.front();
+        leftNode->childNodePtrs.insert(leftNode->childNodePtrs.end(), borrowedChild);
+        rightNode->childNodePtrs.erase(rightNode->childNodePtrs.begin());
+    }
+}
+
+void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftChildIndex, int rightChildIndex) {
+    BPNode* leftNode = leftChildIndex != -1 ? parentNode->childNodePtrs[leftChildIndex] : nullptr;
+    BPNode* rightNode = rightChildIndex != -1 ? parentNode->childNodePtrs[rightChildIndex] : nullptr;
+    BPNode* curNode = parentNode->childNodePtrs[curChildIndex];
+
+    if(leftNode != nullptr){
+        // Move all keys and record pointers from the current node to the left node
+        leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
+
+        // Update the parent's keys and child pointers
+        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex-1);
+        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
+        if(curNode->isLeaf){
+            leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
+            leftNode->nextLeaf = curNode->nextLeaf;
+        }else{
+            leftNode->childNodePtrs.insert(leftNode->childNodePtrs.end(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
+        }
+    } else {
+        // Move all keys and record pointers from the current node to the right node
+        rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
+
+        // Update the parent's keys and child pointers
+        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
+        if(curNode->isLeaf){
+            rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
+        }else{
+            rightNode->childNodePtrs.insert(rightNode->childNodePtrs.begin(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
+        }
+    }
+
+    delete curNode;
 }
 
 BPNode *BPlusTree::getRoot() {
