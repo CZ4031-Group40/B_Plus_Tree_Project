@@ -30,7 +30,7 @@ public:
     unsigned int getCurrBlockUsedSpace() const;
 
     unsigned int getBlockSize();
-
+    unsigned int getBlockNumber(void *storagePtr, void *recordPtr) const;
     unsigned int getBlockSize() const;
 };
 #endif //B_PLUS_TREE_PROJECT_STORAGE_H
