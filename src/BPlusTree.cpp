@@ -722,6 +722,7 @@ void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftC
             parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
             parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
             rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
+            rightNode->minKey = rightNode->recordPtrs[0]->records[0]->homeFGPercentage;
         }else{
             rightNode->keys.insert(rightNode->keys.begin(), rightNode->childNodePtrs[0]->minKey);
             rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
