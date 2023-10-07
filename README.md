@@ -52,10 +52,10 @@
 
 ### Experiment 1 and 2
 
-The script related to experiment 1 and 2 is located in `/src/experiment1and2.cpp`.
+The script related to experiment 1 and 2 is located in `/src/experiment.cpp`.
 
 - This script creates a record for each row from `/data/games.txt` and drops the rows with missing value
 - It prints out the relevant statistics regarding data insertion.
 - It prints out the relevant statistics and parameters of the B+ tree.
 
-To run this script, run `./exp1and2` in the `/build` folder. Ensure you have done the setup above before running the script.
+To run this script, run `./experiment` in the `/build` folder. Ensure you have done the setup above before running the script.
