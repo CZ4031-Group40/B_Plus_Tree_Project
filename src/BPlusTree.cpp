@@ -351,7 +351,7 @@ tuple<NBARecords *,int> BPlusTree::searchRangedRecord(float startKey, float endK
             i++;
             break;
         }
-        if (startKey < firstNode->keys[i]) {
+        if (startKey < firstNode->keys[i] && firstNode->keys[i] < endKey) {
             recordVectorPtr->records.insert(recordVectorPtr->records.end(),
                                             firstNode->recordPtrs[i]->records.begin(),
                                             firstNode->recordPtrs[i]->records.end());
@@ -611,28 +611,26 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
                 }
             }
             else{
-                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->childNodePtrs.size() - 1 >= BPlusNodeSize / 2) {
+                if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->keys.size() - 1 >= BPlusNodeSize / 2) {
                     // Redistribute with the left sibling
                     redistributeWithLeftSibling(currentNode, leftChildIndex, childIndex);
                     currentNode->keys[childIndex - 1] = currentNode->childNodePtrs[childIndex]->minKey;
                 } else if (rightChildIndex != -1 && currentNode->childNodePtrs[rightChildIndex]->keys.size() - 1 >= BPlusNodeSize  / 2) {
                     // Redistribute with the right sibling
                     redistributeWithRightSibling(currentNode, childIndex, rightChildIndex);
-                    currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+                    if(childIndex>0) currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
                     currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
                 } else {
                     // Merge with a neighboring child node if redistribution is not possible
                     mergeChildNodes(currentNode, childIndex, leftChildIndex, rightChildIndex);
                 }
             }
-
-
+            currentNode->minKey = currentNode->childNodePtrs[0]->minKey;
             // Check if the parent node becomes underflowed
-            if (currentNode->keys.size() < (BPlusNodeSize + 1) / 2 && currentNode != root) {
+            if (currentNode->keys.size() < (BPlusNodeSize) / 2 && currentNode != root) {
                 return true; // Node is underflowed, indicating that its parent needs adjustment
             }
         }
-
         return false; // Node is not underflowed
     }
 }
@@ -640,22 +638,23 @@ void BPlusTree::redistributeWithLeftSibling(BPNode* parentNode, int leftChildInd
     BPNode* leftNode = parentNode->childNodePtrs[leftChildIndex];
     BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
 
-
-    float borrowedKey = leftNode->keys.back();
-    rightNode->keys.insert(rightNode->keys.begin(), borrowedKey);
-    leftNode->keys.erase(leftNode->keys.end()-1);
-    rightNode->minKey = rightNode->keys[0];
-
     if (leftNode->isLeaf){
+        float borrowedKey = leftNode->keys.back();
+        rightNode->keys.insert(rightNode->keys.begin(), borrowedKey);
+        leftNode->keys.erase(leftNode->keys.end()-1);
+        rightNode->minKey = rightNode->keys[0];
         NBARecords* borrowedRecord = leftNode->recordPtrs.back();
         rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), borrowedRecord);
         leftNode->recordPtrs.erase(leftNode->recordPtrs.end()-1);
-
     } else  {
+        rightNode->keys.insert(rightNode->keys.begin(), rightNode->childNodePtrs[0]->minKey);
+        leftNode->keys.erase(leftNode->keys.end()-1);
         // Move the corresponding child pointer if it's a non-leaf node
         BPNode* borrowedChild = leftNode->childNodePtrs.back();
         rightNode->childNodePtrs.insert(rightNode->childNodePtrs.begin(), borrowedChild);
         leftNode->childNodePtrs.erase(leftNode->childNodePtrs.end()-1);
+        rightNode->keys[0] = rightNode->childNodePtrs[1]->minKey;
+        rightNode->minKey = rightNode->childNodePtrs[0]->minKey;
     }
 }
 
@@ -664,20 +663,25 @@ void BPlusTree::redistributeWithRightSibling(BPNode* parentNode, int leftChildIn
     BPNode* rightNode = parentNode->childNodePtrs[rightChildIndex];
 
     // Move the leftmost key from the right sibling to the parent
-    float borrowedKey = rightNode->keys.front();
-    leftNode->keys.insert(leftNode->keys.end(), borrowedKey);
-    rightNode->keys.erase(rightNode->keys.begin());
-    rightNode->minKey = rightNode->keys[0];
+
 
     if (rightNode->isLeaf){
+        float borrowedKey = rightNode->keys.front();
+        leftNode->keys.insert(leftNode->keys.end(), borrowedKey);
+        rightNode->keys.erase(rightNode->keys.begin());
+        rightNode->minKey = rightNode->keys[0];
+
         NBARecords* borrowedRecord = rightNode->recordPtrs.front();
         leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), borrowedRecord);
         rightNode->recordPtrs.erase(rightNode->recordPtrs.begin());
     } else  {
+        leftNode->keys.insert(leftNode->keys.end(), rightNode->childNodePtrs[0]->minKey);
+        rightNode->keys.erase(rightNode->keys.begin());
         // Move the corresponding child pointer if it's a non-leaf node
         BPNode* borrowedChild = rightNode->childNodePtrs.front();
         leftNode->childNodePtrs.insert(leftNode->childNodePtrs.end(), borrowedChild);
         rightNode->childNodePtrs.erase(rightNode->childNodePtrs.begin());
+        rightNode->minKey = rightNode->childNodePtrs[0]->minKey;
     }
 }
 
@@ -687,29 +691,43 @@ void BPlusTree::mergeChildNodes(BPNode* parentNode, int curChildIndex, int leftC
     BPNode* curNode = parentNode->childNodePtrs[curChildIndex];
 
     if(leftNode != nullptr){
-        // Move all keys and record pointers from the current node to the left node
-        leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
 
-        // Update the parent's keys and child pointers
-        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex-1);
-        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
         if(curNode->isLeaf){
+            // Move all keys and record pointers from the current node to the left node
+            leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
+
+            // Update the parent's keys and child pointers
+            parentNode->keys.erase(parentNode->keys.begin() + curChildIndex-1);
+            parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
             leftNode->recordPtrs.insert(leftNode->recordPtrs.end(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
             leftNode->nextLeaf = curNode->nextLeaf;
         }else{
+            // Move all keys and record pointers from the current node to the left node
+            leftNode->keys.insert(leftNode->keys.end(), curNode->childNodePtrs[0]->minKey);
+            leftNode->keys.insert(leftNode->keys.end(), curNode->keys.begin(), curNode->keys.end());
+
+            // Update the parent's keys and child pointers
+            parentNode->keys.erase(parentNode->keys.begin() + curChildIndex-1);
+            parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
             leftNode->childNodePtrs.insert(leftNode->childNodePtrs.end(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
         }
     } else {
-        // Move all keys and record pointers from the current node to the right node
-        rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
-
-        // Update the parent's keys and child pointers
-        parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
-        parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
         if(curNode->isLeaf){
+            rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
+
+            // Update the parent's keys and child pointers
+            parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+            parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
             rightNode->recordPtrs.insert(rightNode->recordPtrs.begin(), curNode->recordPtrs.begin(), curNode->recordPtrs.end());
         }else{
+            rightNode->keys.insert(rightNode->keys.begin(), rightNode->childNodePtrs[0]->minKey);
+            rightNode->keys.insert(rightNode->keys.begin(), curNode->keys.begin(), curNode->keys.end());
+
+        // Update the parent's keys and child pointers
+            parentNode->keys.erase(parentNode->keys.begin() + curChildIndex);
+            parentNode->childNodePtrs.erase(parentNode->childNodePtrs.begin() + curChildIndex);
             rightNode->childNodePtrs.insert(rightNode->childNodePtrs.begin(), curNode->childNodePtrs.begin(), curNode->childNodePtrs.end());
+            rightNode->minKey = rightNode->childNodePtrs[0]->minKey;
         }
     }
 
