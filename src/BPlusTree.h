@@ -3,6 +3,7 @@
 #include "DataStruct.h"
 #ifndef B_PLUS_TREE_PROJECT_BPLUSTREE_H
 #define B_PLUS_TREE_PROJECT_BPLUSTREE_H
+#include <set>
 
 using namespace std;
 
@@ -55,6 +56,9 @@ public:
     void redistributeWithRightSibling(BPNode *parentNode, int leftChildIndex, int rightChildIndex);
 
     void mergeChildNodes(BPNode *parentNode, int curChildIndex, int leftChildIndex, int rightChildIndex);
+
+    set<float> searchRangedKeys(float startKey, float endKey);
+
 };
 
 

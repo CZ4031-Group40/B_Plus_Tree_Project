@@ -10,6 +10,7 @@
 #include <set>
 #include "BPlusTree.h"
 #include "Storage.h"
+#include <set>
 
 using namespace std;
 
@@ -226,22 +227,25 @@ int main() {
 
     auto startDelete = chrono::high_resolution_clock::now();
 
-    tuple<NBARecords *, int> result;
-    result = bPlusTree.searchRangedRecord(0,0.35);
-    NBARecords *resultData = get<0>(result);
+    // tuple<NBARecords *, int> result;
+    // result = bPlusTree.searchRangedRecord(0,0.35);
+    // NBARecords *resultData = get<0>(result);
 
 
+
+    // set<float> distinctHomeFGPercentages;
+
+    // for (int i = 0; i < resultData->records.size(); i++) {
+    //     NBARecord *record = resultData->records[i];
+
+    //     if (distinctHomeFGPercentages.find(record->homeFGPercentage) == distinctHomeFGPercentages.end()) {
+    //         distinctHomeFGPercentages.insert(record->homeFGPercentage);
+    //     }
+    // }
     int deleteCount = 0;
 
-    set<float> distinctHomeFGPercentages;
+    set<float> distinctHomeFGPercentages = bPlusTree.searchRangedKeys(0.00, 0.35);
 
-    for (int i = 0; i < resultData->records.size(); i++) {
-        NBARecord *record = resultData->records[i];
-
-        if (distinctHomeFGPercentages.find(record->homeFGPercentage) == distinctHomeFGPercentages.end()) {
-            distinctHomeFGPercentages.insert(record->homeFGPercentage);
-        }
-    }
     for (float distinctPercentage : distinctHomeFGPercentages) {
         bPlusTree.deleteRecord(distinctPercentage);
 
