@@ -60,3 +60,12 @@ unsigned int Storage::getBlockSize() const{
     return blockSize;
 }
 
+unsigned int Storage::getBlockNumber(void *storagePtr, void *recordPtr) const{
+    size_t offset = (unsigned char *)recordPtr - (unsigned char *)storagePtr;
+
+    if (offset >= 0) {
+        return (int)(offset / blockSize);
+    } else {
+        return -1;
+    }
+}

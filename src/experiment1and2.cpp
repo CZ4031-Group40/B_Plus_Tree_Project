@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <set>
 #include <vector>
 #include <iomanip>
 #include <set>
@@ -126,11 +127,15 @@ int main() {
     }
     int recordsPerBlock = storage.getRecordsPerBlock();
     int numberOfRecordsRetrieved = queriedData->records.size();
-    int no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(ceil(numberOfRecordsRetrieved/recordsPerBlock));
-
+    set<int> blockNumberAccessed;
+    auto *storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
+    for (auto record: queriedData->records) {
+        int blockNumber = storage.getBlockNumber((void *) storagePtr, (void *) record);
+        blockNumberAccessed.insert(blockNumber);
+    }
+    int no_of_blocks_accessed = no_of_node_accessed + blockNumberAccessed.size();
     start = chrono::high_resolution_clock::now();
     auto *queriedData2 = new NBARecords();
-    auto *storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
     void *curBlockPtr;
     void *curRecordPtr;
     unsigned int numOfAllocatedBlocks = storage.getNumOfAllocatedBlocks();
@@ -189,8 +194,12 @@ int main() {
     }
     recordsPerBlock = storage.getRecordsPerBlock();
     numberOfRecordsRetrieved = queriedData->records.size();
-    no_of_blocks_accessed = no_of_node_accessed + static_cast<int>(ceil(numberOfRecordsRetrieved/recordsPerBlock));
-
+    blockNumberAccessed.clear();
+    for (auto record: queriedData->records) {
+        int blockNumber = storage.getBlockNumber((void *) storagePtr, (void *) record);
+        blockNumberAccessed.insert(blockNumber);
+    }
+    no_of_blocks_accessed = no_of_node_accessed + blockNumberAccessed.size();
     start = chrono::high_resolution_clock::now();
     queriedData2 = new NBARecords();
     storagePtr = static_cast<unsigned char*>(storage.getStoragePtr());
