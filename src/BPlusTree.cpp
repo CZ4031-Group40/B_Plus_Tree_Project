@@ -351,6 +351,13 @@ tuple<NBARecords *,int> BPlusTree::searchRangedRecord(float startKey, float endK
             i++;
             break;
         }
+        if (startKey < firstNode->keys[i]) {
+            recordVectorPtr->records.insert(recordVectorPtr->records.end(),
+                                            firstNode->recordPtrs[i]->records.begin(),
+                                            firstNode->recordPtrs[i]->records.end());
+            i++;
+            break;
+        }
         i++;
     }
 

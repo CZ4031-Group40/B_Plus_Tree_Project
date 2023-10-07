@@ -34,12 +34,13 @@ int main() {
         cout << "8. delete" << endl;
         cout << "9. Exit" << endl;
 
+
         int choice;
         cin >> choice;
 
         switch(choice) {
             case 1: {
-                ifstream inputFile("../data/test_duplicate.txt");
+                ifstream inputFile("../data/games.txt");
 
                 if (!inputFile) {
                     cerr << "Failed to open the file." << endl;

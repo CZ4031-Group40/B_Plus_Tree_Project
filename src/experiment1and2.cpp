@@ -61,8 +61,8 @@ int main() {
     cout << "Current number of blocks used to store the data: " << allocatedBlocks << endl;
 
     cout << "========================================" << endl;
-    unsigned int empiricalRecordsPerBlock = numOfRecords / allocatedBlocks;
-    cout << "Number of records per block (empirical): " << empiricalRecordsPerBlock << endl;
+    float avgRecordsPerBlock = static_cast<float>(numOfRecords) / allocatedBlocks;
+    cout << "Average number of records per block : " << avgRecordsPerBlock << endl;
 
     cout << "========================================" << endl;
     // Print row numbers with errors at the end
