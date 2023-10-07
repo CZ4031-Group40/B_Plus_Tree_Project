@@ -606,9 +606,12 @@ bool BPlusTree::deleteRecordRecursively(BPNode* currentNode, float keyToDelete) 
                 if (leftChildIndex != -1 && currentNode->childNodePtrs[leftChildIndex]->keys.size() - 1 >= BPlusNodeSize / 2) {
                     // Redistribute with the left sibling
                     redistributeWithLeftSibling(currentNode, leftChildIndex, childIndex);
+                    currentNode->keys[childIndex - 1] = currentNode->childNodePtrs[childIndex]->minKey;
                 } else if (rightChildIndex != -1 && currentNode->childNodePtrs[rightChildIndex]->keys.size() - 1 >= BPlusNodeSize  / 2) {
                     // Redistribute with the right sibling
                     redistributeWithRightSibling(currentNode, childIndex, rightChildIndex);
+                    currentNode->keys[childIndex-1] = currentNode->childNodePtrs[childIndex]->minKey;
+                    currentNode->keys[rightChildIndex-1] = currentNode->childNodePtrs[rightChildIndex]->minKey;
                 } else {
                     // Merge with a neighboring child node if redistribution is not possible
                     mergeChildNodes(currentNode, leftChildIndex, childIndex);
