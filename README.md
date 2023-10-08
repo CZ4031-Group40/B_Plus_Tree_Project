@@ -19,11 +19,11 @@
    cmake ..
    cmake --build .
    ```
-4. An exe file should be created inside the Debug folder run this exe in console by running
+4. An exe file should be created inside the Debug folder run this exe in console by running: 
    ```
    .\Debug\B_Plus_Tree_Project.exe
    ```
-
+   This exe file will run the main.cpp file for internal testing of the B+ Tree functions. To get the experiments results, please follow the steps below.
 ### Mac
 
 1. Install CMake through
@@ -47,15 +47,12 @@
    ```bash
    ./B_Plus_Tree_Project
    ```
+   This exe file will run the main.cpp file for internal testing of the B+ Tree functions. To get the experiments results, please follow the steps below.
 
 ## Experiments
 
-The script related to experiment is located in `/src/experiment.cpp`.
+The script related to experiment is located in `/src/experiment.cpp`. When the script is run, it will print out all the results relevant to the experiments.
 
-- This script creates a record for each row from `/data/games.txt` and drops the rows with missing value
-- It prints out the relevant statistics regarding data insertion.
-- It prints out the relevant statistics and parameters of the B+ tree.
-- 
 ### Windows
 To run this script follow step 1 to 3 on top replace step 4 with
 ```
