@@ -45,7 +45,7 @@
    ```
 4. Run the executable
    ```bash
-   ./B_Plus_Tree_Project
+   ./experiment
    ```
    This exe file will run the main.cpp file for internal testing of the B+ Tree functions. To get the experiments results, please follow the steps below.
 
