@@ -250,7 +250,6 @@ int main() {
     chrono::duration<double> time_taken_delete = endDelete - startDelete;
 
     BPNode* newRoot = bPlusTree.getRoot();
-    bPlusTree.displayTree(newRoot);
     bPlusTree.calculateStatistics(newRoot,0);
     bPlusTree.displayRootNode();
 
