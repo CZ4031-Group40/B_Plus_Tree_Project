@@ -98,7 +98,7 @@ int main() {
     bPlusTree.displayRootNode();
 
 
-    cout << "=======================================EXPERIMENT 3====================================" << endl;
+    cout << "=======================================EXPERIMENT THREE====================================" << endl;
 
     float queriedFGP = 0.5;
     cout << "Searching for FG_PCT home = " << queriedFGP << endl;
@@ -166,7 +166,7 @@ int main() {
     cout << endl;
 
 
-    cout << "=======================================EXPERIMENT 4====================================" << endl;
+    cout << "=======================================EXPERIMENT FOUR====================================" << endl;
 
     float startKey = 0.6;
     float endKey = 1;
@@ -231,7 +231,7 @@ int main() {
     cout << endl;
 
 
-    cout << "========================================EXPERIMENT 5========================================" << endl;
+    cout << "========================================EXPERIMENT FIVE========================================" << endl;
     BPlusTree bPlusTreeLS = bPlusTree;
 
     auto startDelete = chrono::high_resolution_clock::now();

@@ -97,7 +97,6 @@ BPlusTree::BPlusTree(vector<tuple<float, void *>> &initialData) {
                 parentNode->keys.push_back(bpNodes[i]->minKey);
             } else {
                 parentNode->minKey = parentNode->childNodePtrs[0]->minKey;
-                cout<<parentNode->minKey<< " t" <<endl;
                 parentNodes.push_back(parentNode);
 
                 auto *newParentNode = new BPNode(false);
