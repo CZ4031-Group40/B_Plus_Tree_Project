@@ -45,7 +45,7 @@
    ```
 4. Run the executable
    ```bash
-   ./experiment
+   ./B_Plus_Tree_Project
    ```
    This exe file will run the main.cpp file for internal testing of the B+ Tree functions. To get the experiments results, please follow the steps below.
 
@@ -56,7 +56,7 @@ The script related to experiment is located in `/src/experiment.cpp`. When the s
 ### Windows
 To run this script follow step 1 to 3 on top replace step 4 with
 ```
-.\Debug\B_Plus_Tree_Project.exe
+.\Debug\Experiment.exe
 ```
    
 ### Mac
